@@ -2,13 +2,10 @@
 #define VEHICLE_H
 
 #include "maneuver.h"
+#include "util.h"
 
 using namespace std;
 
-struct Coordinate {
-	int x;
-	int y;
-};
 
 class Vehicle {
 	private:
@@ -21,6 +18,7 @@ class Vehicle {
 			front_left,
 			front_right;
 		int orientation;	//angle between 0 and pi	
+		void compute_secondary_coords();
 		
 	public:
 		Coordinate get_rear_center();
