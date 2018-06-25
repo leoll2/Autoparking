@@ -1,6 +1,7 @@
 #ifndef POLYGON_H
 #define POLYGON_H
 
+#include <cstdlib>
 #include <vector>
 #include "util.h"
 
@@ -28,6 +29,9 @@ class Polygon {
 		const vector<Coordinate> vertices;
 	public:
 		Polygon(const vector<Coordinate> &v);
+		unsigned int get_n_sides() const;
+		vector<Coordinate> get_vertices1() const;
+		float* get_vertices2() const;
 		friend bool _check_collision(const Polygon& p1, const Polygon& p2);
 		friend bool check_collision(const Polygon& p1, const Polygon& p2);
 		friend bool check_collision(const Arc& a, const Polygon& p);

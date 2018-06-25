@@ -3,6 +3,23 @@
 Arc::Arc(Coordinate c, double r, double t1, double t2) :
 	center(c), radius(r), theta1(t1), theta2(t2) {};
 
+unsigned int Polygon::get_n_sides() const {
+	return n_sides;
+}
+
+vector<Coordinate> Polygon::get_vertices1() const {
+	return vertices;
+}
+
+float* Polygon::get_vertices2() const {
+	float *ret = (float*) malloc(2 * n_sides * sizeof(float));
+	for (unsigned int i = 0; i < n_sides; ++i) {
+		ret[2*i] 	= vertices[i].x;
+		ret[2*i+1] 	= vertices[i].y;
+	}
+	return ret;
+}
+
 Polygon::Polygon(const vector<Coordinate> &v) :
 	n_sides(v.size()), vertices(v) { }
 

@@ -1,6 +1,9 @@
 #ifndef MANEUVER_H
 #define MANEUVER_H
 
+#include <cstdint>
+#include <iostream>
+
 #define NUM_RADI		2
 #define NUM_DISP		3
 #define MIN_RADI		500
