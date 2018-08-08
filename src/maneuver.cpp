@@ -5,28 +5,28 @@ using namespace std;
 
 unsigned int Maneuver::encode_maneuver() {
 	uint8_t dir_code = NUM_RADI + spin*(turning_radius/MIN_RADI);
-	return (forward ? NUM_DISP * (2 * NUM_RADI + 1) : 0) +
+	return (verse ? NUM_DISP * (2 * NUM_RADI + 1) : 0) +
 			NUM_DISP * dir_code +
 			(displacement/MIN_DISP - 1);
 }
 
 void Maneuver::decode_maneuver(unsigned int code) {
-	displacement = MIN_DISP * (1 + code % 3);
+	displacement = static_cast<Displacement>(MIN_DISP * (1 + code % 3));
 	uint8_t dir_code = (code / NUM_DISP) % (2 * NUM_RADI + 1);
 	if (dir_code < NUM_RADI) {
-		spin = -1;
-		turning_radius = MIN_RADI*(NUM_RADI - dir_code);
+		spin = static_cast<Spin>(-1);
+		turning_radius = static_cast<TurningRadius>(MIN_RADI*(NUM_RADI - dir_code));
 	} else if (dir_code == NUM_RADI) {
-		spin = 0;
+		spin = static_cast<Spin>(0);
 	} else {
-		spin = 1;
-		turning_radius = MIN_RADI*(dir_code - NUM_RADI);
+		spin = static_cast<Spin>(1);
+		turning_radius = static_cast<TurningRadius>(MIN_RADI*(dir_code - NUM_RADI));
 	}
-	forward = (code >=  NUM_DISP * (2 * NUM_RADI + 1));
+	verse = static_cast<Verse>(code >=  NUM_DISP * (2 * NUM_RADI + 1));
 }
 
 ostream& operator<<(ostream& os, const Maneuver& m) {
-	os << (m.forward ? "fore " : "back ");
+	os << (m.verse ? "fore " : "back ");
 	switch (m.spin) {
 		case -1:
 			os << "counterclockwise " << m.turning_radius << "cm ";
