@@ -53,8 +53,7 @@ void draw_polygon(unsigned int n_vertices, float* vertices, ALLEGRO_COLOR color)
 	std::transform(vertices, vertices + 2*n_vertices, vertices, op_scale);
 	//reverse the y axis
 	std::transform(vertices, vertices + 2*n_vertices, vertices, op_reverse);
-	/*for (unsigned int j = 0; j < n_vertices; ++j)	//debug
-		std::cout << "(" << vertices[2*j] << ", " << vertices[2*j+1] << ")" << std::endl;*/
+	
 	al_draw_filled_polygon(vertices, n_vertices, color);
 	delete[] vertices;
 }
@@ -66,18 +65,18 @@ bool start_graphics(ALLEGRO_DISPLAY *display) {
 void display_all(const Map& m, const Vehicle& car) {
 	//clear the field
 	al_clear_to_color(COLOR_LIME);
-	//draw the field box
+	//draw the map
 	al_draw_filled_rectangle(0, 0, HREF_POINTS * VISUAL_UNIT, VREF_POINTS * VISUAL_UNIT, COLOR_GREY);
 	//draw the obstacles
 	for (auto ob : m.obstacles)
 		draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
 	//draw the car
 	if (car.verify_collision(m))
-		draw_polygon(4, car.get_vertices(), COLOR_RED);
+		draw_polygon(4, car.get_vertices2(), COLOR_RED);
 	else
-		draw_polygon(4, car.get_vertices(), COLOR_GREEN);
+		draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
 	al_flip_display();
-	al_rest(1.0);
+	//al_rest(1.0);
 }
 
 void end_graphics(ALLEGRO_DISPLAY *display) {

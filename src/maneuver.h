@@ -9,9 +9,9 @@
 #define MIN_RADI		500
 #define MIN_DISP		50
 
-enum Verse : bool {
-	FORWARD 	= true,
-	BACKWARDS 	= false
+enum Verse : int8_t {
+	FORWARD 	= 1,
+	BACKWARDS 	= -1
 };
 
 enum Spin : int8_t {
@@ -42,11 +42,20 @@ class Maneuver {
 		void decode_maneuver(unsigned int code);
 	
 	public:
+		/* getter methods */
+		Verse get_verse();
+		Spin get_spin();
+		TurningRadius get_turning_radius();
+		Displacement get_displacement();
+	
 		/* Encodes a maneuver. Returns its code. */
 		unsigned int encode_maneuver();
 		
 		/* Prints the attributes of a maneuver. */
 		friend std::ostream& operator<<(std::ostream& os, const Maneuver& m);
+		
+		/* Generate a random maneuver. */
+		static Maneuver random_maneuver();
 		
 		/* Constructor */
 		Maneuver(unsigned int code);

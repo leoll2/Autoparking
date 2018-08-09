@@ -9,7 +9,7 @@ using namespace std;
 
 class Polygon;	//forward declaration
 
-/* From theta1 to theta2 counterclockwise*/
+/* From theta1 to theta2 counterclockwise */
 class Arc {
 private:
 		const Coordinate center;
@@ -25,7 +25,7 @@ private:
 
 class Polygon {
 	private:
-		const unsigned int n_sides;				
+		const unsigned int n_sides;
 		const vector<Coordinate> vertices;
 	public:
 		Polygon(const vector<Coordinate> &v);
