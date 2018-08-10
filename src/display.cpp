@@ -62,16 +62,16 @@ bool start_graphics(ALLEGRO_DISPLAY *display) {
 	return initialize_display(display) && initialize_primitives();
 }
 
-void display_all(const Map& m, const Vehicle& car) {
+void display_all(const Map& map, const Vehicle& car) {
 	//clear the field
 	al_clear_to_color(COLOR_LIME);
 	//draw the map
 	al_draw_filled_rectangle(0, 0, HREF_POINTS * VISUAL_UNIT, VREF_POINTS * VISUAL_UNIT, COLOR_GREY);
 	//draw the obstacles
-	for (auto ob : m.obstacles)
+	for (auto ob : map.obstacles)
 		draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
 	//draw the car
-	if (car.verify_collision(m))
+	if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
 		draw_polygon(4, car.get_vertices2(), COLOR_RED);
 	else
 		draw_polygon(4, car.get_vertices2(), COLOR_GREEN);

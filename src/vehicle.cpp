@@ -176,6 +176,6 @@ Vehicle Vehicle::random_vehicle() {
 	return Vehicle(8*SPACE_UNIT, 3*SPACE_UNIT, Coordinate(random_x, random_y), random_angle);
 }
 
-Polygon Vehicle::to_polygon() {
+Polygon Vehicle::to_polygon() const {
 	return Polygon(this->get_vertices1());
 }

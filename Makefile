@@ -5,7 +5,7 @@ CONF = -Iconf
 
 .PHONY: all clean
 
-all: main test_maneuver test_shapes test_collision
+all: main test_maneuver test_shapes test_collision test_movements
 
 build/display.o: src/display.cpp src/display.h conf/display_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/display.cpp -o build/display.o
@@ -33,6 +33,9 @@ build/test_shapes.o: src/test_shapes.cpp src/shapes.h
 	
 build/test_collision.o: src/test_collision.cpp
 	$(CC) $(CFLAGS) $(CONF) -c src/test_collision.cpp -o build/test_collision.o
+	
+build/test_movements.o: src/test_movements.cpp
+	$(CC) $(CFLAGS) $(CONF) -c src/test_movements.cpp -o build/test_movements.o
 
 build/vehicle.o: src/vehicle.cpp src/vehicle.h
 	$(CC) $(CFLAGS) $(CONF) -c src/vehicle.cpp -o build/vehicle.o
@@ -60,6 +63,15 @@ test_collision: build/test_collision.o build/maneuver.o build/display.o build/ve
 	build/map.o \
 	build/util.o \
 	build/shapes.o -o bin/test_collision
+
+test_movements: build/test_movements.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/shapes.o build/util.o
+	$(CC) $(ALLEG)  build/test_movements.o \
+	build/display.o \
+	build/maneuver.o \
+	build/vehicle.o \
+	build/map.o \
+	build/util.o \
+	build/shapes.o -o bin/test_movements
 
 clean:
 	rm -f bin/*

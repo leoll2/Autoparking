@@ -58,7 +58,7 @@ public:
 		static Vehicle random_vehicle();
 		
 		/* Return a Polygon representation of this vehicle. */
-		Polygon to_polygon();
+		Polygon to_polygon() const;
 		
 		/* Constructor */
 		Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle);
