@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 			Maneuver mnv = Maneuver::random_maneuver();
 			//Maneuver mnv = Maneuver(5);
+                        std::cout << "Maneuver code: \t" << mnv.encode_maneuver() << std::endl;
 			ret = car.move(map, mnv);
 			display_all(map, car);
 		} while (ret == 0);

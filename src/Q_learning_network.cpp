@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include "Q_learning_network.h"
 #include "vehicle_params.h"
 #include "vehicle.h"
@@ -63,5 +64,9 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     map(m),
     target_state(Vehicle::encode_vehicle(pi/2, map.target.x, map.target.y))
 {
-    // TO BE IMPLEMENTED
+    std::cout << "Starting initialization of AI..." << std::endl;
+    initialize_Q();
+    std::cout << "Matrix Q ready" << std::endl;
+    initialize_R();
+    std::cout << "Matrix R ready" << std::endl;
 }

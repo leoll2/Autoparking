@@ -157,6 +157,7 @@ unsigned int Vehicle::move(Map& map, Maneuver& mnv) {
     switch(spin) {
         case STRAIGHT:
             new_pos = rear_center + verse * Direction::from_angle(orientation) * arc_length;
+            new_angle = orientation;
             break;
         case CLOCKWISE:
         case COUNTERCLOCKWISE:

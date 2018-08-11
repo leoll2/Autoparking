@@ -5,6 +5,7 @@
 #include "display.h"
 #include "field_params.h"
 #include "map.h"
+#include "Q_learning_network.h"
 #include "shapes.h"
 #include "vehicle.h"
 
@@ -35,6 +36,8 @@ int main(int argc, char **argv) {
 	Polygon ob2(ob2_coords);
 	map.add_obstacle(ob2);
 
+        Q_LearningNetwork ai(map);
+        
 	/* Keep spawning the car in random positions */
 	while(1) {
 		//Vehicle car = Vehicle::random_vehicle();

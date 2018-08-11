@@ -43,12 +43,13 @@ build/util.o: src/util.cpp src/util.h
 build/vehicle.o: src/vehicle.cpp src/vehicle.h
 	$(CC) $(CFLAGS) $(CONF) -c src/vehicle.cpp -o build/vehicle.o
 
-main: build/main.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/shapes.o build/util.o
+main: build/main.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/shapes.o build/Q_learning_network.o build/util.o
 	$(CC) $(ALLEG)  build/main.o \
 	build/display.o \
 	build/maneuver.o \
 	build/vehicle.o \
 	build/map.o \
+	build/Q_learning_network.o \
 	build/util.o \
 	build/shapes.o -o bin/main
 
