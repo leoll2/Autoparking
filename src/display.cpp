@@ -76,7 +76,6 @@ void display_all(const Map& map, const Vehicle& car) {
 	else
 		draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
 	al_flip_display();
-	//al_rest(1.0);
 }
 
 void end_graphics(ALLEGRO_DISPLAY *display) {

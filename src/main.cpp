@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
 		return -1;
 
 	/* Create the map */
-	Map map(HREF_POINTS, VREF_POINTS);
+	Map map(HREF_POINTS, VREF_POINTS, Coordinate(8*SPACE_UNIT, 8*SPACE_UNIT));
 	
 	/* Add two rectangular obstacles */
 	std::vector<Coordinate> ob1_coords = {	//must be counterclockwise

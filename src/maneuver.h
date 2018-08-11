@@ -4,20 +4,20 @@
 #include <cstdint>
 #include <iostream>
 
-#define NUM_RADI		2
-#define NUM_DISP		3
-#define MIN_RADI		500
-#define MIN_DISP		50
+#define NUM_RADI	2
+#define NUM_DISP	3
+#define MIN_RADI	500
+#define MIN_DISP	50
 
 enum Verse : int8_t {
-	FORWARD 	= 1,
-	BACKWARDS 	= -1
+	FORWARD     = 1,
+	BACKWARDS   = -1
 };
 
 enum Spin : int8_t {
-	CLOCKWISE			= 1,
-	STRAIGHT			= 0,
-	COUNTERCLOCKWISE	= -1
+	CLOCKWISE           = 1,
+	STRAIGHT            = 0,
+	COUNTERCLOCKWISE    = -1
 };
 
 enum TurningRadius : uint16_t {
@@ -32,33 +32,33 @@ enum Displacement : uint16_t {
 };
 
 class Maneuver {
-	private:
-		Verse verse;					// Forward or reverse gear
-		Spin spin;						// Steer direction
-		TurningRadius turning_radius;	// Steering radius
-		Displacement displacement;		// Distance covered
-		
-		/* Decode a maneuver from its code. Initializes the attributes with proper values. */
-		void decode_maneuver(unsigned int code);
-	
-	public:
-		/* getter methods */
-		Verse get_verse();
-		Spin get_spin();
-		TurningRadius get_turning_radius();
-		Displacement get_displacement();
-	
-		/* Encodes a maneuver. Returns its code. */
-		unsigned int encode_maneuver();
-		
-		/* Prints the attributes of a maneuver. */
-		friend std::ostream& operator<<(std::ostream& os, const Maneuver& m);
-		
-		/* Generate a random maneuver. */
-		static Maneuver random_maneuver();
-		
-		/* Constructor */
-		Maneuver(unsigned int code);
+    private:
+        Verse verse;			// Forward or reverse gear
+        Spin spin;			// Steer direction
+        TurningRadius turning_radius;	// Steering radius
+        Displacement displacement;	// Distance covered
+
+        /* Decode a maneuver from its code. Initializes the attributes with proper values. */
+        void decode_maneuver(unsigned int code);
+
+    public:
+        /* getter methods */
+        Verse get_verse();
+        Spin get_spin();
+        TurningRadius get_turning_radius();
+        Displacement get_displacement();
+
+        /* Encodes a maneuver. Returns its code. */
+        unsigned int encode_maneuver();
+
+        /* Prints the attributes of a maneuver. */
+        friend std::ostream& operator<<(std::ostream& os, const Maneuver& m);
+
+        /* Generate a random maneuver. */
+        static Maneuver random_maneuver();
+
+        /* Constructor */
+        Maneuver(unsigned int code);
 };
 
 #endif

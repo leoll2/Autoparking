@@ -19,11 +19,11 @@ build/maneuver.o: src/maneuver.cpp src/maneuver.h
 build/map.o: src/map.cpp src/map.h
 	$(CC) $(CFLAGS) $(CONF) -c src/map.cpp -o build/map.o
 
+build/Q_learning_network.o: src/Q_learning_network.cpp src/Q_learning_network.h conf/AI_params.h
+	$(CC) $(CFLAGS) $(CONF) -c src/Q_learning_network.cpp -o build/Q_learning_network.o
+
 build/shapes.o: src/shapes.cpp src/shapes.h
 	$(CC) $(CFLAGS) -c src/shapes.cpp -o build/shapes.o
-
-build/util.o: src/util.cpp src/util.h
-	$(CC) $(CFLAGS) -c src/util.cpp -o build/util.o
 
 build/test_maneuver.o: src/test_maneuver.cpp src/maneuver.h
 	$(CC) $(CFLAGS) -c src/test_maneuver.cpp -o build/test_maneuver.o
@@ -36,6 +36,9 @@ build/test_collision.o: src/test_collision.cpp
 	
 build/test_movements.o: src/test_movements.cpp
 	$(CC) $(CFLAGS) $(CONF) -c src/test_movements.cpp -o build/test_movements.o
+
+build/util.o: src/util.cpp src/util.h
+	$(CC) $(CFLAGS) -c src/util.cpp -o build/util.o
 
 build/vehicle.o: src/vehicle.cpp src/vehicle.h
 	$(CC) $(CFLAGS) $(CONF) -c src/vehicle.cpp -o build/vehicle.o

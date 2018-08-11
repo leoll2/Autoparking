@@ -26,5 +26,8 @@ bool Map::collides_with_obstacles(const Polygon& v) const {
 	return false;
 }
 
-Map::Map(unsigned int w, unsigned int h) :
-	width(w), height(h) {}
+Map::Map(unsigned int w, unsigned int h, Coordinate t) :
+	width(w), 
+        height(h),
+        target(t)
+{}
