@@ -74,23 +74,26 @@ void Vehicle::compute_secondary_coords() {
     front_right =   Coordinate((front_center.x + (width/2 * sin(orientation))) , (front_center.y - (width/2 * cos(orientation))));
 }
 
+void Vehicle::discretize_coords() {
+    std::vector<double> state = decode_vehicle(this->encode());
+    rear_center = Coordinate(state[1], state[2]);
+    orientation = state[0];
+    compute_secondary_coords();
+}
+
 Vehicle::Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle) :
     length(l),
     width(w),
     orientation(wrap_angle(angle)),
     rear_center(rc),
-    rear_left((rear_center.x - (width/2 * sin(orientation))) , (rear_center.y + (width/2 * cos(orientation)))),
-    rear_right((rear_center.x + (width/2 * sin(orientation))) , (rear_center.y - (width/2 * cos(orientation)))),
-    front_center((rear_center.x + (length  * cos(orientation))) , (rear_center.y + (length  * sin(orientation)))),
-    front_left((front_center.x - (width/2 * sin(orientation))) , (front_center.y + (width/2 * cos(orientation)))),
-    front_right((front_center.x + (width/2 * sin(orientation))) , (front_center.y - (width/2 * cos(orientation))))
-    { /*
-        std::cout << "created vehicle" << endl;
-        std::cout << "RL: (" << rear_left.x << ", " << rear_left.y << ")" << endl;
-        std::cout << "RR: (" << rear_right.x << ", " << rear_right.y << ")" << endl;
-        std::cout << "FL: (" << front_left.x << ", " << front_left.y << ")" << endl;
-        std::cout << "FR: (" << front_right.x << ", " << front_right.y << ")" << endl;*/
-    }
+    rear_left(0,0),
+    rear_right(0,0),
+    front_center(0,0),
+    front_left(0,0),
+    front_right(0,0)
+{
+    discretize_coords();
+}
 	
 Vehicle::Vehicle(const Vehicle& v1) :
     length(v1.get_length()),
@@ -130,7 +133,7 @@ unsigned int Vehicle::reposition(Map& map, Coordinate pos, double angle) {
     compute_secondary_coords();
     
     // Verify if the vehicle is still well-aligned (faces an angle between 0 and pi)
-    if (orientation > pi)
+    if (orientation >= pi)
         return 3;
 
     // Verify if the vehicle is still inside the map
@@ -142,6 +145,7 @@ unsigned int Vehicle::reposition(Map& map, Coordinate pos, double angle) {
     if (map.collides_with_obstacles(p))
         return 1;
     
+    discretize_coords();    // this can be done only if the position is valid!
     return 0;
 }
 
@@ -185,10 +189,9 @@ unsigned int Vehicle::move(Map& map, Maneuver& mnv) {
 }
 
 Vehicle Vehicle::random_vehicle() {
-    int random_x = rand() % (HREF_POINTS * SPACE_UNIT);
-    int random_y = rand() % (VREF_POINTS * SPACE_UNIT);
-    float random_angle = ((double)rand() / RAND_MAX) * pi;
-    return Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(random_x, random_y), random_angle);
+    unsigned int seed = rand() % (HREF_POINTS * VREF_POINTS * ANGLE_REFS);
+    std::vector<double> state = decode_vehicle(seed);
+    return Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(state[1], state[2]), state[0]);
 }
 
 Polygon Vehicle::to_polygon() const {
@@ -211,6 +214,8 @@ unsigned int Vehicle::encode_vehicle(double orientation, double x, double y) {
     unsigned int y_box = floor(y / SPACE_UNIT);
     assert(orientation_box < ANGLE_REFS && "Bug in vehicle encoding (angle)");
     assert(x_box < HREF_POINTS && "Bug in vehicle encoding (x)");
+    if (y_box >= VREF_POINTS)
+        std::cout << "y state bug: " << y_box << std::endl;
     assert(y_box < VREF_POINTS && "Bug in vehicle encoding (y)");
     return orientation_box + ANGLE_REFS * y_box + ANGLE_REFS * VREF_POINTS * x_box;
 }

@@ -2,9 +2,9 @@
 
 bool Map::is_within_boundaries(const Coordinate& c) const {
 	return 	c.x >= 0 &&
-			c.x <= SPACE_UNIT * width &&
-			c.y >= 0 &&
-			c.y <= SPACE_UNIT * height;
+                c.x <= SPACE_UNIT * width &&
+                c.y >= 0 &&
+                c.y <= SPACE_UNIT * height;
 }
 
 void Map::add_obstacle(Polygon& ob) {

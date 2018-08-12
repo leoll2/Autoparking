@@ -20,12 +20,14 @@ class Vehicle {
             front_left,             // front left coordinate
             front_right;            // front right coordinate
 
-        /* Calculate the other coordinates starting only from rear middle coordinate and orientation. */
+        /* Calculates the other coordinates starting only from rear middle coordinate and orientation. */
         void compute_secondary_coords();
+        /* Adjusts the coordinates to align them to the middle of state. */
+        void discretize_coords();
 		
     public:
         /* getter methods */
-        int	get_length() const;
+        int get_length() const;
         int get_width() const;
         double get_orientation() const;
         Coordinate get_rear_center() const;

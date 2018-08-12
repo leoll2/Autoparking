@@ -7,6 +7,7 @@
 #include "map.h"
 #include "shapes.h"
 #include "vehicle.h"
+#include "vehicle_params.h"
 
 int main(int argc, char **argv) {
 	
@@ -38,18 +39,18 @@ int main(int argc, char **argv) {
 	/* Keep spawning the car in random positions */
 	while(1) {
 		//Vehicle car = Vehicle::random_vehicle();
-		Vehicle car = Vehicle(8*SPACE_UNIT, 3*SPACE_UNIT, Coordinate(4*SPACE_UNIT, 8*SPACE_UNIT), pi/2);
+		Vehicle car = Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(4*SPACE_UNIT, 8*SPACE_UNIT), pi/2);
 		display_all(map, car);
 		int ret;
 		do {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			Maneuver mnv = Maneuver::random_maneuver();
 			//Maneuver mnv = Maneuver(5);
                         std::cout << "Maneuver code: \t" << mnv.encode_maneuver() << std::endl;
 			ret = car.move(map, mnv);
 			display_all(map, car);
 		} while (ret == 0);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(200));
 	}
 	end_graphics(display);
 
