@@ -4,6 +4,7 @@
 #include <iostream>
 #include "field_params.h"
 #include "vehicle.h"
+#include "vehicle_params.h"
 
 using namespace std;
 
@@ -184,11 +185,10 @@ unsigned int Vehicle::move(Map& map, Maneuver& mnv) {
 }
 
 Vehicle Vehicle::random_vehicle() {
-    srand(time(NULL));
     int random_x = rand() % (HREF_POINTS * SPACE_UNIT);
     int random_y = rand() % (VREF_POINTS * SPACE_UNIT);
-    float random_angle = ((double)rand() / RAND_MAX) * (2*pi);
-    return Vehicle(8*SPACE_UNIT, 3*SPACE_UNIT, Coordinate(random_x, random_y), random_angle);
+    float random_angle = ((double)rand() / RAND_MAX) * pi;
+    return Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(random_x, random_y), random_angle);
 }
 
 Polygon Vehicle::to_polygon() const {
@@ -197,15 +197,24 @@ Polygon Vehicle::to_polygon() const {
 
 std::vector<double> Vehicle::decode_vehicle(unsigned int code) {
     std::vector<double> ret(3);
+    /* A state actually corresponds to a cluster of points. Adding 0.5 makes sure
+     * we return the one in the middle. */
     ret[0] = ((code % ANGLE_REFS) + 0.5) * (pi / ANGLE_REFS);           // orientation
-    ret[1] = (((code / ANGLE_REFS) % VREF_POINTS) + 0.5) * SPACE_UNIT;  // x
-    ret[2] = (((code / ANGLE_REFS / VREF_POINTS)) + 0.5) * SPACE_UNIT;  // y
+    ret[2] = (((code / ANGLE_REFS) % VREF_POINTS) + 0.5) * SPACE_UNIT;  // y
+    ret[1] = (((code / ANGLE_REFS / VREF_POINTS)) + 0.5) * SPACE_UNIT;  // x
     return ret;
 }
 
 unsigned int Vehicle::encode_vehicle(double orientation, double x, double y) {
-    int orientation_box = floor(0.5 + ANGLE_REFS * orientation / pi);   // 0.5 "centers" the state
-    int x_box = floor(0.5 + x / SPACE_UNIT);
-    int y_box = floor(0.5 + y / SPACE_UNIT);
+    unsigned int orientation_box = floor(ANGLE_REFS * orientation / pi);
+    unsigned int x_box = floor(x / SPACE_UNIT);
+    unsigned int y_box = floor(y / SPACE_UNIT);
+    assert(orientation_box < ANGLE_REFS && "Bug in vehicle encoding (angle)");
+    assert(x_box < HREF_POINTS && "Bug in vehicle encoding (x)");
+    assert(y_box < VREF_POINTS && "Bug in vehicle encoding (y)");
     return orientation_box + ANGLE_REFS * y_box + ANGLE_REFS * VREF_POINTS * x_box;
+}
+
+unsigned int Vehicle::encode() {
+    return encode_vehicle(orientation, rear_center.x, rear_center.y);
 }

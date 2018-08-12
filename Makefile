@@ -59,21 +59,23 @@ test_maneuver: build/maneuver.o build/test_maneuver.o build/util.o
 test_shapes: build/shapes.o build/test_shapes.o build/util.o
 	$(CC) build/shapes.o build/test_shapes.o build/util.o -o bin/test_shapes
 	
-test_collision: build/test_collision.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/shapes.o build/util.o
+test_collision: build/test_collision.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/Q_learning_network.o build/shapes.o build/util.o
 	$(CC) $(ALLEG)  build/test_collision.o \
 	build/display.o \
 	build/maneuver.o \
 	build/vehicle.o \
 	build/map.o \
+	build/Q_learning_network.o \
 	build/util.o \
 	build/shapes.o -o bin/test_collision
 
-test_movements: build/test_movements.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/shapes.o build/util.o
+test_movements: build/test_movements.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/Q_learning_network.o build/shapes.o build/util.o
 	$(CC) $(ALLEG)  build/test_movements.o \
 	build/display.o \
 	build/maneuver.o \
 	build/vehicle.o \
 	build/map.o \
+	build/Q_learning_network.o \
 	build/util.o \
 	build/shapes.o -o bin/test_movements
 

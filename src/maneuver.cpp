@@ -5,23 +5,23 @@
 
 using namespace std;
 
-Verse Maneuver::get_verse() {
+Verse Maneuver::get_verse() const {
     return verse;
 }
 
-Spin Maneuver::get_spin() {
+Spin Maneuver::get_spin() const {
     return spin;
 }
 
-TurningRadius Maneuver::get_turning_radius() {
+TurningRadius Maneuver::get_turning_radius() const {
     return turning_radius;
 }
 
-Displacement Maneuver::get_displacement() {
+Displacement Maneuver::get_displacement() const {
     return displacement;
 }
 
-unsigned int Maneuver::encode_maneuver() {
+unsigned int Maneuver::encode_maneuver() const {
     uint8_t dir_code = NUM_RADI + spin*(turning_radius/MIN_RADI);
     return (verse > 0 ? NUM_DISP * (2 * NUM_RADI + 1) : 0) +
             NUM_DISP * dir_code +
@@ -60,7 +60,6 @@ ostream& operator<<(ostream& os, const Maneuver& m) {
 }
 
 Maneuver Maneuver::random_maneuver() {
-	srand(time(NULL));
 	return Maneuver(rand() % 30);
 }
 

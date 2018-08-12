@@ -68,11 +68,17 @@ class Vehicle {
         /* Returns a Polygon representation of this vehicle. */
         Polygon to_polygon() const;
 
-        /* Decodes the state of a vehicle */
+        /* Decodes the state of a vehicle. Returns a 3-element vector:
+         *      [0] -> orientation
+         *      [1] -> x
+         *      [2] -> y  */
         static std::vector<double> decode_vehicle(unsigned int code);
         
         /* Encodes the state of a vehicle */
         static unsigned int encode_vehicle(double orientation, double x, double y);
+        
+        /* Non-static version of encode_vehicle. */
+        unsigned int encode();
 
         /* Constructor */
         Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle);

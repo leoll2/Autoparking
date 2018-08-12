@@ -43,13 +43,13 @@ class Maneuver {
 
     public:
         /* getter methods */
-        Verse get_verse();
-        Spin get_spin();
-        TurningRadius get_turning_radius();
-        Displacement get_displacement();
+        Verse get_verse() const;
+        Spin get_spin() const;
+        TurningRadius get_turning_radius() const;
+        Displacement get_displacement() const;
 
         /* Encodes a maneuver. Returns its code. */
-        unsigned int encode_maneuver();
+        unsigned int encode_maneuver() const;
 
         /* Prints the attributes of a maneuver. */
         friend std::ostream& operator<<(std::ostream& os, const Maneuver& m);
