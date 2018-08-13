@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 		//Vehicle car = Vehicle::random_vehicle();
 		Vehicle car = Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(4*SPACE_UNIT, 8*SPACE_UNIT), pi/2);
 		display_all(map, car);
-		int ret;
+		unsigned int ret;
 		do {
 			std::this_thread::sleep_for(std::chrono::milliseconds(200));
 			Maneuver mnv = Maneuver::random_maneuver();

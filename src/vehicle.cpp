@@ -94,6 +94,23 @@ Vehicle::Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle) :
 {
     discretize_coords();
 }
+
+Vehicle::Vehicle(unsigned int l, unsigned int w, unsigned int state_code) :
+    length(l),
+    width(w),
+    orientation(0),
+    rear_center(0,0),
+    rear_left(0,0),
+    rear_right(0,0),
+    front_center(0,0),
+    front_left(0,0),
+    front_right(0,0)
+{
+    std::vector<double> state = Vehicle::decode_vehicle(state_code);
+    orientation = state[0];
+    rear_center = Coordinate(state[1], state[2]);
+    discretize_coords();
+}
 	
 Vehicle::Vehicle(const Vehicle& v1) :
     length(v1.get_length()),
@@ -212,14 +229,23 @@ unsigned int Vehicle::encode_vehicle(double orientation, double x, double y) {
     unsigned int orientation_box = floor(ANGLE_REFS * orientation / pi);
     unsigned int x_box = floor(x / SPACE_UNIT);
     unsigned int y_box = floor(y / SPACE_UNIT);
-    assert(orientation_box < ANGLE_REFS && "Bug in vehicle encoding (angle)");
-    assert(x_box < HREF_POINTS && "Bug in vehicle encoding (x)");
-    if (y_box >= VREF_POINTS)
-        std::cout << "y state bug: " << y_box << std::endl;
-    assert(y_box < VREF_POINTS && "Bug in vehicle encoding (y)");
+    assert(orientation_box < ANGLE_REFS && 
+        "Can't encode the vehicle (orientation out of range). Make sure to check"
+        "the consistency of arguments before calling this function.");
+    assert(x_box < HREF_POINTS && 
+        "Can't encode the vehicle (x out of range). Make sure to check"
+        "the consistency of arguments before calling this function.");
+    assert(y_box < VREF_POINTS &&
+        "Can't encode the vehicle (y out of range). Make sure to check"
+        "the consistency of arguments before calling this function.");
     return orientation_box + ANGLE_REFS * y_box + ANGLE_REFS * VREF_POINTS * x_box;
 }
 
 unsigned int Vehicle::encode() {
     return encode_vehicle(orientation, rear_center.x, rear_center.y);
+}
+
+std::ostream& operator<<(std::ostream& os, const Vehicle& v) {
+	os << "Position: " << v.rear_center << "\nOrientation: " << v.orientation;
+	return os;
 }

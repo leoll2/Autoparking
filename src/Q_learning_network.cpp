@@ -1,5 +1,9 @@
 #include <algorithm>
+#include <cassert>
+#include <chrono>
 #include <iostream>
+#include <thread>
+#include "display.h"
 #include "Q_learning_network.h"
 #include "vehicle_params.h"
 #include "vehicle.h"
@@ -20,6 +24,7 @@ void Q_LearningNetwork::initialize_R() {
             std::vector<double> car_state = Vehicle::decode_vehicle(s);
             double initial_angle = car_state[0];
             Coordinate initial_pos(car_state[1], car_state[2]);
+            assert(Vehicle::encode_vehicle(car_state[0], car_state[1], car_state[2]) == s && "Encode-decode buggy");
             
             // Position the dummy vehicle here
             dummy.reposition(map, initial_pos, initial_angle);
@@ -37,10 +42,10 @@ void Q_LearningNetwork::initialize_R() {
             switch(ret) {
                 case 3:
                 case 2:
-                    R[s][a] = -200;
+                    R[s][a] = OUT_OF_BOX_PUNISH;
                     break;
                 case 1:
-                    R[s][a] = -100;
+                    R[s][a] = COLLISION_PUNISH;
                     break;
                 case 0:
                     /*dist_from_target = 
@@ -48,52 +53,47 @@ void Q_LearningNetwork::initialize_R() {
                         (new_pos.y - map.target.y) * (new_pos.y - map.target.y);*/
                     unsigned int s2 = dummy.encode();
                     if (s2 == target_state) {
-                        R[s][a] = 1000;
-                        std::cout << "R[" << s << "][" << a << "] -> s2: " << s2 << "with reward 1000" << std::endl; 
+                        R[s][a] = TARGET_REWARD;
                     } else
-                        R[s][a] = -5;
+                        R[s][a] = MOVEMENT_PUNISH;
                         // R[s][a] = (100 / (1 + dist_from_target / 10000)) - 8 * abs(new_angle - pi/2);
             }
         }
     }
 }
 
-void Q_LearningNetwork::train() {
-    std::cout<< "target state: " << target_state << std::endl;
-    unsigned int iterations = 0;
-    Vehicle dummy = Vehicle::random_vehicle();
+void Q_LearningNetwork::train(unsigned int iterations) {
+    
+    unsigned int iter = 0;
     do {
-        ++iterations;
-        if (iterations % 50000 == 0)
-            std::cout << "Iterations: " << iterations << std::endl;
+        ++iter;
+        if (iter % 50000 == 0)
+            std::cout << "Iterations: " << iter << std::endl;
         Vehicle dummy = Vehicle::random_vehicle();
-        unsigned int s1 = Vehicle::encode_vehicle(dummy.get_orientation(), dummy.get_rear_center().x, dummy.get_rear_center().y);
+        unsigned int s1 = dummy.encode();
         if (s1 == target_state) // if the vehicle spawned in the final state, abort this episode
             continue;
-        //std::cout << "S1| angle: " << dummy.get_orientation() << " x: " << dummy.get_rear_center().x << " y: " << dummy.get_rear_center().y << std::endl;
+
         unsigned int ret;
         do {
+            s1 = dummy.encode();
             Maneuver mnv = Maneuver::random_maneuver();
             unsigned int a = mnv.encode_maneuver();
             ret = dummy.move(map, mnv);
             if (ret) {
                 Q[s1][a] = Q[s1][a] * (1 - ALPHA) + ALPHA * (R[s1][a] + GAMMA * get_max_state_quality(s1));
             } else {
-                float old_Q_value = Q[s1][a];       //DEBUG
+                //float old_Q_value = Q[s1][a];       //DEBUG CONVERGENCE
                 unsigned int s2 = dummy.encode();
                 Q[s1][a] = Q[s1][a] * (1 - ALPHA) + ALPHA * (R[s1][a] + GAMMA * get_max_state_quality(s2));
                 if (s2 == target_state) // stop the episode if the car reached the final state
                     break;
-                if (iterations % 1000 == 0)
-                    std::cout << "newQ: " << Q[s1][a] << " deltaQ: " << (Q[s1][a] - old_Q_value) << std::endl;
-                if (Q[s1][a] > 1000) {
-                    std::cout << "s1: " << s1 << " a: " << a << " oldQvalue: " << old_Q_value
-                             << " s2: " << s2 << " max(s2): " << get_max_state_quality(s2) << " r: " << R[s1][a] << std::endl;
-                    exit(20);
-                }
+                /*if (iterations % 1000 == 0)   //DEBUG CONVERGENCE
+                    std::cout << "newQ: " << Q[s1][a] << " deltaQ: " << (Q[s1][a] - old_Q_value) << std::endl;*/
+                assert (Q[s1][a] <= TARGET_REWARD && "Q-matrix is diverging!");
             }
         } while (ret == 0);
-    } while (iterations < 10 * n_states * n_actions);
+    } while (iter < iterations);
 }
 
 unsigned int Q_LearningNetwork::get_best_action(int s) {
@@ -117,7 +117,8 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     std::cout << "Matrix Q ready" << std::endl;
     initialize_R();
     std::cout << "Matrix R ready" << std::endl;
-    train();
+    unsigned int n_iterations = 100 * n_states * n_actions;
+    train(n_iterations);
     std::cout << "Trained!" << std::endl;
 }
 
@@ -139,4 +140,31 @@ double Q_LearningNetwork::get_quality(unsigned int s, unsigned int a) const {
 
 double Q_LearningNetwork::get_reward(unsigned int s, unsigned int a) const {
     return R[s][a];
+}
+
+void Q_LearningNetwork::simulate_episode() {
+    // Spawn the vehicle in a random position
+    Vehicle car = Vehicle::random_vehicle();
+    
+    // Show it
+    display_all(map, car);
+    
+    // Start performing maneuvers
+    unsigned int ret;
+    unsigned int state = car.encode();
+    do {
+        // Choose the (hopefully) best maneuver
+        Maneuver mnv(get_best_action(state));
+        // Move the vehicle accordingly
+        ret = car.move(map, mnv);
+        // Show the new position
+        display_all(map, car);
+        // If the vehicle reached the final state, wait a bit then return
+        if ((ret == 0) && (state = car.encode() == target_state)) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(600));
+            return;
+        } else {    // else just wait a little
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        }
+    } while (ret == 0);
 }

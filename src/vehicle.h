@@ -84,9 +84,15 @@ class Vehicle {
 
         /* Constructor */
         Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle);
+        
+        /* Constructor*/
+        Vehicle(unsigned int l, unsigned int w, unsigned int state_code);
 
         /* Copy constructor */
         Vehicle(const Vehicle& v1);
+        
+        /* Ostream operator */
+        friend std::ostream& operator<<(std::ostream& os, const Vehicle& v);
 };
 
 #endif

@@ -45,19 +45,11 @@ int main(int argc, char **argv) {
     std::cout << "Rewards are now displayed" << std::endl;
      while(1);*/
     
-    /* Keep spawning the car in random positions */
     while(1) {
-        Vehicle car = Vehicle::random_vehicle();
-        display_all(map, car);
-        int ret;
-        do {
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-            Maneuver mnv(ai.get_best_action(car.encode()));
-            ret = car.move(map, mnv);
-            display_all(map, car);
-        } while (ret == 0);
+        ai.simulate_episode();
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+    
     end_graphics(display);
 
     return 0;

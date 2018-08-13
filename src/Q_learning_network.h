@@ -19,7 +19,7 @@ class Q_LearningNetwork {
         float get_max_state_quality(int s);
         void initialize_Q();
         void initialize_R();
-        void train();
+        void train(unsigned int n_iterations);
     public:
         /* Constructor */
         Q_LearningNetwork(Map& m);
@@ -35,6 +35,8 @@ class Q_LearningNetwork {
         double get_reward(unsigned int s, unsigned int a) const;
         /* Returns the code of the best action for the provided state. */
         unsigned int get_best_action(int s);
+        /* Simulates and displays one episode on the basis of the current state of Q */
+        void simulate_episode();
 };
 
 #endif /* Q_LEARNINGNETWORK_H */
