@@ -245,6 +245,15 @@ unsigned int Vehicle::encode() {
     return encode_vehicle(orientation, rear_center.x, rear_center.y);
 }
 
+Vehicle& Vehicle::operator=(const Vehicle& v1) {
+    length = v1.get_length();
+    width = v1.get_width();
+    orientation = v1.get_orientation();
+    rear_center = v1.get_rear_center();
+    compute_secondary_coords();
+    return *this;
+}
+
 std::ostream& operator<<(std::ostream& os, const Vehicle& v) {
 	os << "Position: " << v.rear_center << "\nOrientation: " << v.orientation;
 	return os;

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <thread>
 #include "display.h"
@@ -96,6 +97,36 @@ void Q_LearningNetwork::train(unsigned int iterations) {
     } while (iter < iterations);
 }
 
+bool Q_LearningNetwork::restore_from_cache() {
+    ifstream r("cache/R");
+    ifstream q("cache/Q");
+    r >> n_states >> n_actions;
+
+    for (unsigned int s = 0; s < n_states; ++s) {
+        for (unsigned int a = 0; a < n_actions; ++a) {
+            r >> this->R[s][a];
+            q >> this->Q[s][a];
+        }
+    }
+    return true;
+}
+
+bool Q_LearningNetwork::store_into_cache() {
+    ofstream r("cache/R");
+    ofstream q("cache/Q");
+    r << n_states << " " << n_actions << "\n";
+    q << n_states << " " << n_actions << "\n";
+    for (unsigned int s = 0; s < n_states; ++s) {
+        for (unsigned int a = 0; a < n_actions; ++a) {
+            r << this->R[s][a] << " ";
+            q << this->Q[s][a] << " ";
+        }
+        //r << "\n";
+        //q << "\n";
+    }
+    return true;
+}
+
 unsigned int Q_LearningNetwork::get_best_action(int s) {
     return std::distance(Q[s].begin(), std::max_element(Q[s].begin(), Q[s].end()));
 }
@@ -117,9 +148,13 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     std::cout << "Matrix Q ready" << std::endl;
     initialize_R();
     std::cout << "Matrix R ready" << std::endl;
-    unsigned int n_iterations = 100 * n_states * n_actions;
+    unsigned int n_iterations = 10 * n_states * n_actions;
     train(n_iterations);
     std::cout << "Trained!" << std::endl;
+    if (store_into_cache())
+        std::cout << "Cache updated!" << std::endl;
+    else
+        std::cout << "Couldn't update the cache!" << std::endl;
 }
 
 unsigned int Q_LearningNetwork::get_n_states() const {
@@ -143,8 +178,12 @@ double Q_LearningNetwork::get_reward(unsigned int s, unsigned int a) const {
 }
 
 void Q_LearningNetwork::simulate_episode() {
-    // Spawn the vehicle in a random position
+    // Spawn the vehicle in a random legal position
     Vehicle car = Vehicle::random_vehicle();
+    while (!map.is_within_boundaries(car.to_polygon()) || 
+            map.collides_with_obstacles(car.to_polygon())) {
+        car = Vehicle::random_vehicle();
+    }
     
     // Show it
     display_all(map, car);
@@ -160,7 +199,7 @@ void Q_LearningNetwork::simulate_episode() {
         // Show the new position
         display_all(map, car);
         // If the vehicle reached the final state, wait a bit then return
-        if ((ret == 0) && (state = car.encode() == target_state)) {
+        if ((ret == 0) && ((state = car.encode()) == target_state)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(600));
             return;
         } else {    // else just wait a little

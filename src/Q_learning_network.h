@@ -20,6 +20,8 @@ class Q_LearningNetwork {
         void initialize_Q();
         void initialize_R();
         void train(unsigned int n_iterations);
+        bool restore_from_cache();
+        bool store_into_cache();
     public:
         /* Constructor */
         Q_LearningNetwork(Map& m);

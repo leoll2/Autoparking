@@ -10,7 +10,7 @@ using namespace std;
 /* A rectangular vehicle. */
 class Vehicle {
     private:
-        const unsigned int length,  // length of the vehicle
+        unsigned int length,  // length of the vehicle
             width;                  // width of the vehicle
         double orientation;         // vehicle's head facing angle (between 0 and pi)
         Coordinate rear_center,     // rear middle coordinate
@@ -90,6 +90,9 @@ class Vehicle {
 
         /* Copy constructor */
         Vehicle(const Vehicle& v1);
+        
+        /* Assignment operator */
+        Vehicle& operator=(const Vehicle& v1);
         
         /* Ostream operator */
         friend std::ostream& operator<<(std::ostream& os, const Vehicle& v);
