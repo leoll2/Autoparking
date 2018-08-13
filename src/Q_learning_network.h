@@ -17,7 +17,7 @@ class Q_LearningNetwork {
         unsigned int target_state;
         
         float get_max_state_quality(int s);
-        void initialize_Q();
+        bool initialize_Q();
         void initialize_R();
         void train(unsigned int n_iterations);
         bool restore_from_cache();

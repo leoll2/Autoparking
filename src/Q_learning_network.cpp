@@ -9,8 +9,11 @@
 #include "vehicle_params.h"
 #include "vehicle.h"
 
-void Q_LearningNetwork::initialize_Q() {
-    return;     // leave Q to default zero
+bool Q_LearningNetwork::initialize_Q() {
+    if (restore_from_cache())
+        return true;
+    else
+        return false;
 }
 
 void Q_LearningNetwork::initialize_R() {
@@ -95,35 +98,65 @@ void Q_LearningNetwork::train(unsigned int iterations) {
             }
         } while (ret == 0);
     } while (iter < iterations);
+    std::cout << "Finished training for " << iterations << " iterations!" << std::endl;
+    store_into_cache();
 }
 
 bool Q_LearningNetwork::restore_from_cache() {
-    ifstream r("cache/R");
-    ifstream q("cache/Q");
-    r >> n_states >> n_actions;
-
-    for (unsigned int s = 0; s < n_states; ++s) {
-        for (unsigned int a = 0; a < n_actions; ++a) {
-            r >> this->R[s][a];
-            q >> this->Q[s][a];
+    std::ifstream r("cache/R");
+    std::ifstream q("cache/Q");
+    
+    if (r.is_open() && q.is_open()) {
+        unsigned int s_r, a_r, s_q, a_q;
+        r >> s_r >> a_r;
+        q >> s_q >> a_q;
+        if (s_r != n_states || a_r != n_actions || s_q != n_states || a_q != n_actions) {
+            std::cerr << "Loading from cache failed: dimension mismatch." << std::endl;
+            return false;
         }
+        for (unsigned int s = 0; s < n_states; ++s) {
+            for (unsigned int a = 0; a < n_actions; ++a) {
+                r >> this->R[s][a];
+                q >> this->Q[s][a];
+            }
+        }
+    } else {
+        std::cerr << "Loading from cache failed: couldn't open file." << std::endl;
+        return false;
     }
+    r.close();
+    q.close();
+    if (!r || !q) {
+        std::cerr << "Loading from cache failed: error while reading." << std::endl;
+        return false;
+    }
+    std::cout << "Cache restored" << std::endl;
     return true;
 }
 
 bool Q_LearningNetwork::store_into_cache() {
-    ofstream r("cache/R");
-    ofstream q("cache/Q");
-    r << n_states << " " << n_actions << "\n";
-    q << n_states << " " << n_actions << "\n";
-    for (unsigned int s = 0; s < n_states; ++s) {
-        for (unsigned int a = 0; a < n_actions; ++a) {
-            r << this->R[s][a] << " ";
-            q << this->Q[s][a] << " ";
+    std::ofstream r("cache/R");
+    std::ofstream q("cache/Q");
+    if (r.is_open() && q.is_open()) {
+        r << n_states << " " << n_actions << "\n";
+        q << n_states << " " << n_actions << "\n";
+        for (unsigned int s = 0; s < n_states; ++s) {
+            for (unsigned int a = 0; a < n_actions; ++a) {
+                r << this->R[s][a] << " ";
+                q << this->Q[s][a] << " ";
+            }
         }
-        //r << "\n";
-        //q << "\n";
+    } else {
+        std::cerr << "Updating cache failed: couldn't open file." << std::endl;
+        return false;
     }
+    r.close();
+    q.close();
+    if (!r || !q) {
+        std::cerr << "Updating cache failed: error while reading." << std::endl;
+        return false;
+    }
+    std::cout << "Cache updated" << std::endl;
     return true;
 }
 
@@ -144,17 +177,13 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     target_state(Vehicle::encode_vehicle(pi/2, map.target.x, map.target.y))
 {
     std::cout << "Starting initialization of AI..." << std::endl;
-    initialize_Q();
-    std::cout << "Matrix Q ready" << std::endl;
     initialize_R();
     std::cout << "Matrix R ready" << std::endl;
-    unsigned int n_iterations = 10 * n_states * n_actions;
-    train(n_iterations);
-    std::cout << "Trained!" << std::endl;
-    if (store_into_cache())
-        std::cout << "Cache updated!" << std::endl;
-    else
-        std::cout << "Couldn't update the cache!" << std::endl;
+    if (!initialize_Q()) {
+        unsigned int n_iterations = 10 * n_states * n_actions;
+        train(n_iterations);
+    }
+    std::cout << "Matrix Q ready" << std::endl;
 }
 
 unsigned int Q_LearningNetwork::get_n_states() const {
