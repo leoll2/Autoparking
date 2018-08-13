@@ -144,16 +144,19 @@ Coordinate compute_rotation_center(Coordinate vehicle, double orientation, Turni
 }
 
 unsigned int Vehicle::reposition(Map& map, Coordinate pos, double angle) {
-    // Update the state
+    // Update position and angle
     rear_center = pos;
     orientation = wrap_angle(angle);
-    compute_secondary_coords();
     
-    // Verify if the vehicle is still well-aligned (faces an angle between 0 and pi)
+    // Check if the new state is encodable (position and angle within boundaries)
     if (orientation >= pi)
         return 3;
-
-    // Verify if the vehicle is still inside the map
+    if (!map.is_within_boundaries(rear_center)) // Note: only RC is needed for encoding
+        return 2;
+    
+    discretize_coords();    // this is legit thanks to the previous checks
+    
+    // Verify if the whole vehicle (not only RC!) is still inside the map
     Polygon p = this->to_polygon();
     if (!map.is_within_boundaries(p))
         return 2;
@@ -161,8 +164,7 @@ unsigned int Vehicle::reposition(Map& map, Coordinate pos, double angle) {
     // Check if the vehicle collided with any obstacle
     if (map.collides_with_obstacles(p))
         return 1;
-    
-    discretize_coords();    // this can be done only if the position is valid!
+
     return 0;
 }
 

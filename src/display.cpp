@@ -73,13 +73,21 @@ void draw_circle(float cx, float cy, float r, ALLEGRO_COLOR color) {
 }
 
 void draw_map(const Map& map) {
-    //clear the field
+    // Clear the field
     al_clear_to_color(COLOR_LIME);
-    //draw the map
+    // Draw the map
     al_draw_filled_rectangle(0, 0, map.width * VISUAL_UNIT, map.height * VISUAL_UNIT, COLOR_GREY);
-    //draw the obstacles
+    // Draw the obstacles
     for (auto ob : map.obstacles)
-            draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
+        draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
+}
+
+void draw_car(const Map& map, const Vehicle& car) {
+    // Draw the car
+    if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
+        draw_polygon(4, car.get_vertices2(), COLOR_RED);
+    else
+        draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
 }
 
 bool start_graphics(ALLEGRO_DISPLAY *display) {
@@ -87,15 +95,13 @@ bool start_graphics(ALLEGRO_DISPLAY *display) {
 }
 
 void display_all(const Map& map, const Vehicle& car) {
-        // Draw the field
-        draw_map(map);
-        
-	// Draw the car
-	if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
-		draw_polygon(4, car.get_vertices2(), COLOR_RED);
-	else
-		draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
-	al_flip_display();
+    // Draw the field
+    draw_map(map);
+
+    // Draw the car
+    draw_car(map, car);
+
+    al_flip_display();
 }
 
 ALLEGRO_COLOR compute_reward_color(float reward) {

@@ -210,9 +210,8 @@ void Q_LearningNetwork::simulate_episode() {
     // Spawn the vehicle in a random legal position
     Vehicle car = Vehicle::random_vehicle();
     while (!map.is_within_boundaries(car.to_polygon()) || 
-            map.collides_with_obstacles(car.to_polygon())) {
+            map.collides_with_obstacles(car.to_polygon()))
         car = Vehicle::random_vehicle();
-    }
     
     // Show it
     display_all(map, car);
