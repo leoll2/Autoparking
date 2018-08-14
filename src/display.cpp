@@ -7,10 +7,10 @@
 
 #define COLOR_LIME	al_map_rgb(200,255,140)
 #define COLOR_AMARANTH	al_map_rgb(100,0,0)
-#define COLOR_GREY	al_map_rgb(160,160,160)
+#define COLOR_GREY	al_map_rgb(96,96,96)
 #define COLOR_SKYBLUE	al_map_rgb(135,206,235)
 #define COLOR_RED	al_map_rgb(255,0,0)
-#define COLOR_GREEN	al_map_rgb(0,255,0)
+#define COLOR_GREEN	al_map_rgb(0,102,0)
 
 
 float op_scale(float a) {
@@ -82,12 +82,66 @@ void draw_map(const Map& map) {
         draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
 }
 
+void load_into_array(float* window, const Coordinate& A, const Coordinate& B,
+                                    const Coordinate& C, const Coordinate& D) {
+    window[0] = A.x;
+    window[1] = A.y;
+    window[2] = B.x;
+    window[3] = B.y;
+    window[4] = C.x;
+    window[5] = C.y;
+    window[6] = D.x;
+    window[7] = D.y;
+}
+
 void draw_car(const Map& map, const Vehicle& car) {
-    // Draw the car
+    // Draw the body of the car
     if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
         draw_polygon(4, car.get_vertices2(), COLOR_RED);
     else
         draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
+    
+    // Compute some reference points
+    std::vector<Coordinate> car_vertices = car.get_vertices1();
+    Coordinate circumcenter = (car_vertices[0] + car_vertices[2]) * 0.5;
+    Coordinate right_center = (car_vertices[1] + car_vertices[2]) * 0.5;
+    Coordinate front_center = car.get_front_center();
+    Direction fore = front_center - circumcenter;
+    Direction right = right_center -  circumcenter;
+    
+    // Draw windows
+    // Left window
+    float *window_corners = (float*) malloc(8 * sizeof(float));
+    Coordinate A = circumcenter -0.9 * right -0.8  * fore;
+    Coordinate B = circumcenter -0.8 * right -0.75 * fore;
+    Coordinate C = circumcenter -0.8 * right +0.2  * fore;
+    Coordinate D = circumcenter -0.9 * right +0.5  * fore;
+    load_into_array(window_corners, A, B, C, D);
+    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    // Right window
+    window_corners = (float*) malloc(8 * sizeof(float));
+    A = circumcenter +0.8 * right -0.75 * fore;
+    B = circumcenter +0.9 * right -0.8  * fore;
+    C = circumcenter +0.9 * right +0.5  * fore;
+    D = circumcenter +0.8 * right +0.2  * fore;
+    load_into_array(window_corners, A, B, C, D);
+    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    // Windscreen
+    window_corners = (float*) malloc(8 * sizeof(float));
+    A = circumcenter -0.9 * right +0.6 * fore;
+    B = circumcenter -0.8 * right +0.3  * fore;
+    C = circumcenter +0.8 * right +0.3  * fore;
+    D = circumcenter +0.9 * right +0.6  * fore;
+    load_into_array(window_corners, A, B, C, D);
+    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    // Rear window
+    window_corners = (float*) malloc(8 * sizeof(float));
+    A = circumcenter -0.9 * right -0.95 * fore;
+    B = circumcenter +0.9 * right -0.95 * fore;
+    C = circumcenter +0.8 * right -0.8  * fore;
+    D = circumcenter -0.8 * right -0.8  * fore;
+    load_into_array(window_corners, A, B, C, D);
+    draw_polygon(4, window_corners, COLOR_SKYBLUE);
 }
 
 bool start_graphics(ALLEGRO_DISPLAY *display) {

@@ -3,6 +3,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <thread>
 #include "display.h"
 #include "Q_learning_network.h"
@@ -216,22 +217,31 @@ void Q_LearningNetwork::simulate_episode() {
     // Show it
     display_all(map, car);
     
-    // Start performing maneuvers
-    unsigned int ret;
+    
+    unsigned int ret_move;                          // return value of car.move()
+    std::set<unsigned int> visited;                 // keep track of visited states to abort loops
+    std::pair<std::set<unsigned int>::iterator,bool> ret_visit;  // return value of visited.insert()
     unsigned int state = car.encode();
+    
+    // Start performing maneuvers
     do {
+        // Mark the current state as visited
+        ret_visit = visited.insert(state);
+        // Check whether the state had already been visited
+        if (ret_visit.second == false)
+            return;
         // Choose the (hopefully) best maneuver
         Maneuver mnv(get_best_action(state));
         // Move the vehicle accordingly
-        ret = car.move(map, mnv);
+        ret_move = car.move(map, mnv);
         // Show the new position
         display_all(map, car);
         // If the vehicle reached the final state, wait a bit then return
-        if ((ret == 0) && ((state = car.encode()) == target_state)) {
+        if ((ret_move == 0) && ((state = car.encode()) == target_state)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(600));
             return;
         } else {    // else just wait a little
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
-    } while (ret == 0);
+    } while (ret_move == 0);
 }
