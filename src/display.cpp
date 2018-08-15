@@ -184,6 +184,7 @@ void display_all_entities_enhanced(const Map& map, const Vehicle& car_start,
     double final_angle = car_end.get_orientation();
     double psi = final_angle - start_angle;
     Direction d_vector = final_pos - start_pos;
+    double d_angle = d_vector.get_angle();
     double dist = d_vector.get_modulus();
     
     if (psi == 0) {     // if vehicle is going straight
@@ -196,9 +197,10 @@ void display_all_entities_enhanced(const Map& map, const Vehicle& car_start,
         }
     } else {            // if the vehicle is steering
         double r = 0.5 * dist / sin(abs(psi)/2);
-        Coordinate rot_center = ((psi < 0) == ((final_pos.y - start_pos.y) > 0)) ? 
-                start_pos + Direction::from_angle(start_angle).get_right_perp() * r :
-                start_pos + Direction::from_angle(start_angle).get_left_perp() * r;
+        double theta = 0.5 * (pi - abs(psi));
+        Coordinate rot_center = (psi < 0) ?
+                start_pos + Direction::from_angle(d_angle - theta) * r :
+                start_pos + Direction::from_angle(d_angle + theta) * r;
         double rot_angle_unit = psi / frames;
         for (unsigned int f = 1; f <= frames; ++f) {
             Coordinate new_pos = start_pos.rotate(rot_center, f * rot_angle_unit);

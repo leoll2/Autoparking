@@ -237,12 +237,12 @@ void Q_LearningNetwork::simulate_episode() {
         ret_move = car.move(map, mnv);
         // Show the new position
         //display_all_entities(map, car);
-        display_all_entities_enhanced(map, ghost, car, 10);
+        display_all_entities_enhanced(map, ghost, car, 10, 50);
         // If the vehicle reached the final state, wait a bit then return
         if ((ret_move == 0) && ((state = car.encode()) == target_state)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(600));
             return;
-        } else {    // else just wait a little
+        } else {
             //std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     } while (ret_move == 0);

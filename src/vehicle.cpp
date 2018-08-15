@@ -195,7 +195,6 @@ unsigned int Vehicle::move(Map& map, Maneuver& mnv) {
                 delta_angle = - double(arc_length) / radius;
             else
                 delta_angle = double(arc_length) / radius;
-
             new_pos = rear_center.rotate(rot_center, delta_angle);
             new_angle = wrap_angle(orientation + delta_angle);
     }
