@@ -81,7 +81,7 @@ void Vehicle::discretize_coords() {
     compute_secondary_coords();
 }
 
-Vehicle::Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle) :
+Vehicle::Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle, bool discretize) :
     length(l),
     width(w),
     orientation(wrap_angle(angle)),
@@ -92,7 +92,10 @@ Vehicle::Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle) :
     front_left(0,0),
     front_right(0,0)
 {
-    discretize_coords();
+    if (discretize)
+        discretize_coords();    // compute_secondary_coords() is called within discretize_coords()
+    else
+        compute_secondary_coords();
 }
 
 Vehicle::Vehicle(unsigned int l, unsigned int w, unsigned int state_code) :
@@ -187,17 +190,16 @@ unsigned int Vehicle::move(Map& map, Maneuver& mnv) {
         case COUNTERCLOCKWISE:
             TurningRadius radius = mnv.get_turning_radius();
             Coordinate rot_center = compute_rotation_center(rear_center, orientation, radius, spin, verse);
-            double angle_from_rot_center = (rear_center - rot_center).get_angle();
             double delta_angle;
             if (spin == CLOCKWISE)
                 delta_angle = - double(arc_length) / radius;
             else
                 delta_angle = double(arc_length) / radius;
 
-            double new_angle_from_rot_center = wrap_angle(angle_from_rot_center + delta_angle);
-            new_pos = rot_center + radius * Direction(cos(new_angle_from_rot_center), sin(new_angle_from_rot_center));
+            new_pos = rear_center.rotate(rot_center, delta_angle);
             new_angle = wrap_angle(orientation + delta_angle);
     }
+    // Move the vehicle to the new position, checking the validity of the state
     unsigned int ret = reposition(map, new_pos, new_angle);
     if (ret)
         return ret;

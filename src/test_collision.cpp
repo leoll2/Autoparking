@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 	/* Keep spawning the car in random positions */
 	while(1) {
 		Vehicle car = Vehicle::random_vehicle();
-		display_all(m, car);
+		display_all_entities(m, car);
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
 	end_graphics(display);

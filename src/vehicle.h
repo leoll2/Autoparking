@@ -83,7 +83,7 @@ class Vehicle {
         unsigned int encode();
 
         /* Constructor */
-        Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle);
+        Vehicle(unsigned int l, unsigned int w, Coordinate rc, double angle, bool discretize = true);
         
         /* Constructor*/
         Vehicle(unsigned int l, unsigned int w, unsigned int state_code);

@@ -177,7 +177,7 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     map(m),
     target_state(Vehicle::encode_vehicle(pi/2, map.target.x, map.target.y))
 {
-    std::cout << "Starting initialization of AI..." << std::endl;
+    std::cout << "Initializing AI..." << std::endl;
     initialize_R();
     std::cout << "Matrix R ready" << std::endl;
     if (!initialize_Q()) {
@@ -215,8 +215,7 @@ void Q_LearningNetwork::simulate_episode() {
         car = Vehicle::random_vehicle();
     
     // Show it
-    display_all(map, car);
-    
+    display_all_entities(map, car); 
     
     unsigned int ret_move;                          // return value of car.move()
     std::set<unsigned int> visited;                 // keep track of visited states to abort loops
@@ -230,18 +229,21 @@ void Q_LearningNetwork::simulate_episode() {
         // Check whether the state had already been visited
         if (ret_visit.second == false)
             return;
+        // Clone the vehicle in the current position
+        Vehicle ghost(car);
         // Choose the (hopefully) best maneuver
         Maneuver mnv(get_best_action(state));
         // Move the vehicle accordingly
         ret_move = car.move(map, mnv);
         // Show the new position
-        display_all(map, car);
+        //display_all_entities(map, car);
+        display_all_entities_enhanced(map, ghost, car, 10);
         // If the vehicle reached the final state, wait a bit then return
         if ((ret_move == 0) && ((state = car.encode()) == target_state)) {
             std::this_thread::sleep_for(std::chrono::milliseconds(600));
             return;
         } else {    // else just wait a little
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            //std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     } while (ret_move == 0);
 }

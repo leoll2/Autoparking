@@ -28,6 +28,13 @@ Direction Direction::get_left_perp() {
 	return (Direction(-y, x) * (1/modulus));
 }
 
+Direction Direction::rotate(const Coordinate& rot_center, double delta_angle) {
+    double radius = (*this - rot_center).get_modulus();
+    double angle_from_rot_center = (*this - rot_center).get_angle();
+    double new_angle_from_rot_center = wrap_angle(angle_from_rot_center + delta_angle);
+    return rot_center + radius * Direction(cos(new_angle_from_rot_center), sin(new_angle_from_rot_center));
+}
+
 Direction Direction::operator+(const Direction& d1) const {
 	return Direction(x + d1.x, y + d1.y);
 }

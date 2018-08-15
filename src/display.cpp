@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <chrono>
 #include <functional>
+#include <thread>
 #include "display.h"
 #include "display_params.h"
 #include "field_params.h"
@@ -94,6 +96,14 @@ void load_into_array(float* window, const Coordinate& A, const Coordinate& B,
     window[7] = D.y;
 }
 
+void draw_quadrangle(const Coordinate& A, const Coordinate& B,
+                     const Coordinate& C, const Coordinate& D,
+                     ALLEGRO_COLOR color) {
+    float *corners = (float*) malloc(8 * sizeof(float));
+    load_into_array(corners, A, B, C, D);
+    draw_polygon(4, corners, color);
+}
+
 void draw_car(const Map& map, const Vehicle& car) {
     // Draw the body of the car
     if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
@@ -111,44 +121,50 @@ void draw_car(const Map& map, const Vehicle& car) {
     
     // Draw windows
     // Left window
-    float *window_corners = (float*) malloc(8 * sizeof(float));
     Coordinate A = circumcenter -0.9 * right -0.8  * fore;
     Coordinate B = circumcenter -0.8 * right -0.75 * fore;
     Coordinate C = circumcenter -0.8 * right +0.2  * fore;
     Coordinate D = circumcenter -0.9 * right +0.5  * fore;
-    load_into_array(window_corners, A, B, C, D);
-    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
     // Right window
-    window_corners = (float*) malloc(8 * sizeof(float));
     A = circumcenter +0.8 * right -0.75 * fore;
     B = circumcenter +0.9 * right -0.8  * fore;
     C = circumcenter +0.9 * right +0.5  * fore;
     D = circumcenter +0.8 * right +0.2  * fore;
-    load_into_array(window_corners, A, B, C, D);
-    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
     // Windscreen
-    window_corners = (float*) malloc(8 * sizeof(float));
     A = circumcenter -0.9 * right +0.6 * fore;
     B = circumcenter -0.8 * right +0.3  * fore;
     C = circumcenter +0.8 * right +0.3  * fore;
     D = circumcenter +0.9 * right +0.6  * fore;
-    load_into_array(window_corners, A, B, C, D);
-    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
     // Rear window
-    window_corners = (float*) malloc(8 * sizeof(float));
     A = circumcenter -0.9 * right -0.95 * fore;
     B = circumcenter +0.9 * right -0.95 * fore;
     C = circumcenter +0.8 * right -0.8  * fore;
     D = circumcenter -0.8 * right -0.8  * fore;
-    load_into_array(window_corners, A, B, C, D);
-    draw_polygon(4, window_corners, COLOR_SKYBLUE);
+    draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
+    
+    // Draw headlights
+    // Left headlight
+    A = circumcenter -0.9 * right +0.9  * fore;
+    B = circumcenter -0.7 * right +0.9  * fore;
+    C = circumcenter -0.7 * right +0.95  * fore;
+    D = circumcenter -0.9 * right +0.95  * fore;
+    draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
+    // Right headlight
+    A = circumcenter +0.7 * right +0.9  * fore;
+    B = circumcenter +0.9 * right +0.9  * fore;
+    C = circumcenter +0.9 * right +0.95 * fore;
+    D = circumcenter +0.7 * right +0.95 * fore;
+    draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
 }
 
 bool start_graphics(ALLEGRO_DISPLAY *display) {
 	return initialize_display(display) && initialize_primitives();
 }
 
-void display_all(const Map& map, const Vehicle& car) {
+void display_all_entities(const Map& map, const Vehicle& car) {
     // Draw the field
     draw_map(map);
 
@@ -156,6 +172,42 @@ void display_all(const Map& map, const Vehicle& car) {
     draw_car(map, car);
 
     al_flip_display();
+}
+
+void display_all_entities_enhanced(const Map& map, const Vehicle& car_start, 
+                                   const Vehicle& car_end, unsigned int frames,
+                                   unsigned int millis) {
+    
+    Coordinate start_pos = car_start.get_rear_center();
+    Coordinate final_pos = car_end.get_rear_center();
+    double start_angle = car_start.get_orientation();
+    double final_angle = car_end.get_orientation();
+    double psi = final_angle - start_angle;
+    Direction d_vector = final_pos - start_pos;
+    double dist = d_vector.get_modulus();
+    
+    if (psi == 0) {     // if vehicle is going straight
+        for (unsigned int f = 1; f <= frames; ++f) {
+            Coordinate new_pos = start_pos + (d_vector * (f/(double)frames));
+            Vehicle dummy(car_start.get_length(), car_start.get_width(), new_pos, 
+                    start_angle, false);
+            display_all_entities(map, dummy);
+            std::this_thread::sleep_for(std::chrono::milliseconds(millis));
+        }
+    } else {            // if the vehicle is steering
+        double r = 0.5 * dist / sin(abs(psi)/2);
+        Coordinate rot_center = ((psi < 0) == ((final_pos.y - start_pos.y) > 0)) ? 
+                start_pos + Direction::from_angle(start_angle).get_right_perp() * r :
+                start_pos + Direction::from_angle(start_angle).get_left_perp() * r;
+        double rot_angle_unit = psi / frames;
+        for (unsigned int f = 1; f <= frames; ++f) {
+            Coordinate new_pos = start_pos.rotate(rot_center, f * rot_angle_unit);
+            Vehicle dummy(car_start.get_length(), car_start.get_width(), new_pos, 
+                    start_angle + f * rot_angle_unit, false);
+            display_all_entities(map, dummy);
+            std::this_thread::sleep_for(std::chrono::milliseconds(millis));
+        }
+    }
 }
 
 ALLEGRO_COLOR compute_reward_color(float reward) {

@@ -40,6 +40,8 @@ class Direction {
 		
 		/* Get the left-hand perpendicular direction. The returned vector is normalized.*/
 		Direction get_left_perp();
+                
+                Direction rotate(const Coordinate& rot_center, double angle);
 
 		/* Vector sum */
 		Direction operator+(const Direction& d1) const;
