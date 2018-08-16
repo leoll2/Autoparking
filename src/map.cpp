@@ -19,9 +19,16 @@ bool Map::is_within_boundaries(const Polygon& p) const {
 	return true;
 }
 
-bool Map::collides_with_obstacles(const Polygon& v) const {
+bool Map::collides_with_obstacles(const Polygon& p) const {
 	for (auto o : obstacles)
-		if (check_collision(o, v))
+		if (check_collision(o, p))
+			return true;
+	return false;
+}
+
+bool Map::collides_with_obstacles(const Arc& a) const {
+	for (auto o : obstacles)
+		if (check_collision(o, a))
 			return true;
 	return false;
 }

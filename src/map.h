@@ -16,9 +16,11 @@ class Map {
         /* Returns true if the coordinate is within the map boundaries. */
         bool is_within_boundaries(const Coordinate& c) const;
         /* Returns true if the polygon is completely inside the map. */
-        bool is_within_boundaries(const Polygon& v) const;
+        bool is_within_boundaries(const Polygon& p) const;
         /* Returns true if the polygon collides with an obstacle. */
-        bool collides_with_obstacles(const Polygon& v) const;
+        bool collides_with_obstacles(const Polygon& p) const;
+        /* Returns true if the arc collides with an obstacle. */
+        bool collides_with_obstacles(const Arc& a) const;
         /* Constructor */
         Map(unsigned int w, unsigned int h, Coordinate t);
 };
