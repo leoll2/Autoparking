@@ -18,6 +18,9 @@ build/maneuver.o: src/maneuver.cpp src/maneuver.h
 
 build/map.o: src/map.cpp src/map.h
 	$(CC) $(CFLAGS) $(CONF) -c src/map.cpp -o build/map.o
+	
+build/maps.o: src/maps.cpp src/maps.h
+	$(CC) $(CFLAGS) $(CONF) -c src/maps.cpp -o build/maps.o
 
 build/Q_learning_network.o: src/Q_learning_network.cpp src/Q_learning_network.h conf/AI_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/Q_learning_network.cpp -o build/Q_learning_network.o
@@ -43,12 +46,13 @@ build/util.o: src/util.cpp src/util.h
 build/vehicle.o: src/vehicle.cpp src/vehicle.h
 	$(CC) $(CFLAGS) $(CONF) -c src/vehicle.cpp -o build/vehicle.o
 
-main: build/main.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/shapes.o build/Q_learning_network.o build/util.o
+main: build/main.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/maps.o build/shapes.o build/Q_learning_network.o build/util.o
 	$(CC) $(ALLEG)  build/main.o \
 	build/display.o \
 	build/maneuver.o \
 	build/vehicle.o \
 	build/map.o \
+	build/maps.o \
 	build/Q_learning_network.o \
 	build/util.o \
 	build/shapes.o -o bin/main
@@ -69,12 +73,13 @@ test_collision: build/test_collision.o build/maneuver.o build/display.o build/ve
 	build/util.o \
 	build/shapes.o -o bin/test_collision
 
-test_movements: build/test_movements.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/Q_learning_network.o build/shapes.o build/util.o
+test_movements: build/test_movements.o build/maneuver.o build/display.o build/vehicle.o build/map.o build/maps.o build/Q_learning_network.o build/shapes.o build/util.o
 	$(CC) $(ALLEG)  build/test_movements.o \
 	build/display.o \
 	build/maneuver.o \
 	build/vehicle.o \
 	build/map.o \
+	build/maps.o \
 	build/Q_learning_network.o \
 	build/util.o \
 	build/shapes.o -o bin/test_movements
