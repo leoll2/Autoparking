@@ -20,6 +20,8 @@ private:
         Arc(Coordinate c, double r, double t1, double t2);
         friend bool check_collision(const Arc& a, const Polygon& p);
         friend bool check_collision(const Polygon& p, const Arc& a);
+        /* Ostream operator */
+	friend std::ostream& operator<<(std::ostream& os, const Arc& a);
 };
 
 class Polygon {

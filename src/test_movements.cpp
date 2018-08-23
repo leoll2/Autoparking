@@ -109,6 +109,7 @@ int main(int argc, char **argv) {
         display_all_entities(map, car);
         
         int c;
+        unsigned int ret;
         std::cout << "Insert characters to perform maneuvers. Write . to exit.\n";
         do {
           c = getchar();
@@ -120,25 +121,12 @@ int main(int argc, char **argv) {
           else {
               Vehicle ghost(car);
               Maneuver mnv(mnv_code);
-              car.move(map, mnv);
+              ret = car.move(map, mnv);
+              std::cout << ret << std::endl;
               display_all_entities_enhanced(map, ghost, car, 10, 50);
           }
         } while (c != '.');
         
-        
-        /*
-	while(1) {  
-            unsigned int ret;
-            do {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-                    Maneuver mnv = Maneuver::random_maneuver();
-                    //Maneuver mnv = Maneuver(5);
-                    std::cout << "Maneuver code: \t" << mnv.encode_maneuver() << std::endl;
-                    ret = car.move(map, mnv);
-                    display_all_entities(map, car);
-            } while (ret == 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-	}*/
 	end_graphics(display);
 
 	return 0;

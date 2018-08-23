@@ -147,8 +147,8 @@ Coordinate compute_rotation_center(Coordinate vehicle, double orientation, Turni
 }
 
 bool trajectory_collides(const Vehicle& start_vehicle, const Vehicle& final_vehicle,
-                                Coordinate rot_center, Spin spin, const Map& map) {
-    if (spin == CLOCKWISE) {
+                                Coordinate rot_center, Verse verse, Spin spin, const Map& map) {
+    if ((spin == CLOCKWISE) == (verse == FORWARD)) {
         Coordinate RR_start = start_vehicle.get_rear_right(),
                    RR_final = final_vehicle.get_rear_right(),
                    FL_start = start_vehicle.get_front_left(),
@@ -159,11 +159,23 @@ bool trajectory_collides(const Vehicle& start_vehicle, const Vehicle& final_vehi
                FL_start_angle = (start_vehicle.get_front_left() - rot_center).get_angle(),
                FL_final_angle = (final_vehicle.get_front_left() - rot_center).get_angle(),
                FL_radius = max((FL_start - rot_center).get_modulus(), (FL_final - rot_center).get_modulus());
-        Arc RR_arc(rot_center, RR_radius, RR_final_angle, RR_start_angle);
-        Arc FL_arc(rot_center, FL_radius, FL_final_angle, FL_start_angle);
+        if (verse == FORWARD) {     // Arc angles must be specified counterclockwisely
+            std::swap(RR_start_angle, RR_final_angle);
+            std::swap(FL_start_angle, FL_final_angle);
+        }
+        Arc RR_arc(rot_center, RR_radius, RR_start_angle, RR_final_angle);
+        Arc FL_arc(rot_center, FL_radius, FL_start_angle, FL_final_angle);
+            
+        /*std::cout << "RR: " << RR_arc << std::endl;     //DEBUG
+        std::cout << "FL: " << FL_arc << std::endl;     //DEBUG
+        if (map.collides_with_obstacles(RR_arc))         //DEBUG
+            std::cout << "RR collision" << std::endl;   //DEBUG
+        if (map.collides_with_obstacles(FL_arc))         //DEBUG
+            std::cout << "FL collision" << std::endl;   //DEBUG*/
+        
         if (map.collides_with_obstacles(RR_arc) || map.collides_with_obstacles(FL_arc))
             return true;
-    } else if (spin == COUNTERCLOCKWISE) {
+    } else {
         Coordinate RL_start = start_vehicle.get_rear_left(),
                    RL_final = final_vehicle.get_rear_left(),
                    FR_start = start_vehicle.get_front_right(),
@@ -174,8 +186,20 @@ bool trajectory_collides(const Vehicle& start_vehicle, const Vehicle& final_vehi
                FR_start_angle = (FR_start - rot_center).get_angle(),
                FR_final_angle = (FR_final - rot_center).get_angle(),
                FR_radius = max((FR_start - rot_center).get_modulus(), (FR_final - rot_center).get_modulus());
+        if (verse == BACKWARDS) {     // Arc angles must be specified counterclockwisely
+            std::swap(RL_start_angle, RL_final_angle);
+            std::swap(FR_start_angle, FR_final_angle);
+        }
         Arc RL_arc(rot_center, RL_radius, RL_start_angle, RL_final_angle);
         Arc FR_arc(rot_center, FR_radius, FR_start_angle, FR_final_angle);
+        
+        /*std::cout << "RL: " << RL_arc << std::endl;     //DEBUG
+        std::cout << "FR: " << FR_arc << std::endl;     //DEBUG
+        if (map.collides_with_obstacles(RL_arc))         //DEBUG
+            std::cout << "RL collision" << std::endl;   //DEBUG
+        if (map.collides_with_obstacles(FR_arc))        //DEBUG
+            std::cout << "FR collision" << std::endl;   //DEBUG*/
+        
         if (map.collides_with_obstacles(RL_arc) || map.collides_with_obstacles(FR_arc))
             return true;
     }
@@ -241,9 +265,8 @@ unsigned int Vehicle::move(Map& map, Maneuver& mnv) {
             if ((ret = reposition(map, new_pos, new_angle)))
                 return ret;
             // Check for trajectory arcs collisions
-            if (trajectory_collides(ghost, *this, rot_center, spin, map))
-                //std::cout << "ARC COLLISION\n";
-                return 1; //THIS MUST BE REACTIVATED
+            if (trajectory_collides(ghost, *this, rot_center, verse, spin, map))
+                return 1;
     }
     return 0;
 }

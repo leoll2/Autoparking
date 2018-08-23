@@ -69,18 +69,28 @@ int main() {
 	Polygon p11(v11);
 	Arc a3(Coordinate(0,0), 2.1, 0.3, 1.7);
 	if (!check_collision(p11, a3))
-		cout << "Test 7 passed" << endl;
+            cout << "Test 7 passed" << endl;
 	else
-		cout << "Test 7 not passed" << endl;
+            cout << "Test 7 not passed" << endl;
 		
 	/*TEST8*/
 	vector<Coordinate> v12 = {{0, 2}, {1.5, 1}, {1, -1}, {-1, -1}, {-1.5, 1}};
 	Polygon p12(v12);
 	Arc a4(Coordinate(0,0), 1.7, 0.3, 1.4);
 	if (check_collision(p12, a4))
-		cout << "Test 8 passed" << endl;
+            cout << "Test 8 passed" << endl;
 	else
-		cout << "Test 8 not passed" << endl;
+            cout << "Test 8 not passed" << endl;
+	
+        
+        /*TEST9*/
+	vector<Coordinate> v13 = {{350, 900}, {600, 900}, {600, 1200}, {350, 1200}};
+	Polygon p13(v13);
+	Arc a5(Coordinate(-275, 425), 743.8, 0.664, 0.3598);
+	if (!check_collision(p13, a5))
+            cout << "Test 9 passed" << endl;
+	else
+            cout << "Test 9 not passed" << endl;
 	
 	return 0;
 }
