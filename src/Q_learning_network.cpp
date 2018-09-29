@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <set>
@@ -41,9 +42,6 @@ void Q_LearningNetwork::initialize_R() {
             unsigned int ret = dummy.move(map, mvn);
             
             // Compute the reward function for the current state on the basis of the next one
-            /*Coordinate new_pos = dummy.get_rear_center();
-            double new_angle = dummy.get_orientation();
-            float dist_from_target;*/
             switch(ret) {
                 case 3:
                 case 2:
@@ -53,27 +51,44 @@ void Q_LearningNetwork::initialize_R() {
                     R[s][a] = COLLISION_PUNISH;
                     break;
                 case 0:
-                    /*dist_from_target = 
-                        (new_pos.x - map.target.x) * (new_pos.x - map.target.x) + 
-                        (new_pos.y - map.target.y) * (new_pos.y - map.target.y);*/
                     unsigned int s2 = dummy.encode();
                     if (s2 == target_state) {
                         R[s][a] = TARGET_REWARD;
                     } else
                         R[s][a] = MOVEMENT_PUNISH;
-                        // R[s][a] = (100 / (1 + dist_from_target / 10000)) - 8 * abs(new_angle - pi/2);
             }
         }
     }
 }
 
+unsigned int Q_LearningNetwork::get_best_action(int s) {
+    return std::distance(Q[s].begin(), std::max_element(Q[s].begin(), Q[s].end()));
+}
+
+unsigned int Q_LearningNetwork::get_eps_greedy_action(int s) {
+    // Generate random number between 0 and 1
+    double r = (double) rand() / (RAND_MAX);
+    // If the random number is less than epsilon, return a random action
+    if (r < EPSILON)
+        return rand() % this->n_actions;
+    // Else return the best action, according to policy
+    return this->get_best_action(s);
+}
+
+float Q_LearningNetwork::get_max_state_quality(int s) {
+    return *std::max_element(Q[s].begin(), Q[s].end());
+}
+
 void Q_LearningNetwork::train(unsigned int iterations) {
     
     unsigned int iter = 0;
+    float avg_delta = CONV_INIT_DELTA;
     do {
         ++iter;
-        if (iter % 50000 == 0)
+        if (iter % 50000 == 0) {
             std::cout << "Iterations: " << iter << std::endl;
+            std::cout << "Avg delta: " << avg_delta << std::endl;
+        }
         Vehicle dummy = Vehicle::random_vehicle();
         unsigned int s1 = dummy.encode();
         if (s1 == target_state) // if the vehicle spawned in the final state, abort this episode
@@ -82,24 +97,27 @@ void Q_LearningNetwork::train(unsigned int iterations) {
         unsigned int ret;
         do {
             s1 = dummy.encode();
-            Maneuver mnv = Maneuver::random_maneuver();
-            unsigned int a = mnv.encode_maneuver();
+            unsigned int a = get_eps_greedy_action(s1);
+            Maneuver mnv(a);
             ret = dummy.move(map, mnv);
+            float old_Q_value = Q[s1][a];
             if (ret) {
-                Q[s1][a] = Q[s1][a] * (1 - ALPHA) + ALPHA * (R[s1][a] + GAMMA * get_max_state_quality(s1));
+                Q[s1][a] = old_Q_value * (1 - ALPHA) + ALPHA * (R[s1][a] + GAMMA * get_max_state_quality(s1));
             } else {
-                //float old_Q_value = Q[s1][a];       //DEBUG CONVERGENCE
                 unsigned int s2 = dummy.encode();
-                Q[s1][a] = Q[s1][a] * (1 - ALPHA) + ALPHA * (R[s1][a] + GAMMA * get_max_state_quality(s2));
+                Q[s1][a] = old_Q_value * (1 - ALPHA) + ALPHA * (R[s1][a] + GAMMA * get_max_state_quality(s2));
                 if (s2 == target_state) // stop the episode if the car reached the final state
                     break;
-                /*if (iterations % 1000 == 0)   //DEBUG CONVERGENCE
-                    std::cout << "newQ: " << Q[s1][a] << " deltaQ: " << (Q[s1][a] - old_Q_value) << std::endl;*/
                 assert (Q[s1][a] <= TARGET_REWARD && "Q-matrix is diverging!");
+                avg_delta = (1-CONV_ALPHA) * avg_delta + CONV_ALPHA * abs(Q[s1][a] - old_Q_value);
             }
         } while (ret == 0);
-    } while (iter < iterations);
-    std::cout << "Finished training for " << iterations << " iterations!" << std::endl;
+    } while (iter < iterations && avg_delta > CONV_THRESHOLD);
+    if (iter >= iterations)
+        std::cout << "Training stopped after reaching the maximum limit of iterations." << std::endl;
+    else
+        std::cout << "Training stopped due to convergence." << std::endl;
+    std::cout << "Performed iterations: " << iter << std::endl;
     store_into_cache();
 }
 
@@ -159,14 +177,6 @@ bool Q_LearningNetwork::store_into_cache() {
     }
     std::cout << "Cache updated" << std::endl;
     return true;
-}
-
-unsigned int Q_LearningNetwork::get_best_action(int s) {
-    return std::distance(Q[s].begin(), std::max_element(Q[s].begin(), Q[s].end()));
-}
-
-float Q_LearningNetwork::get_max_state_quality(int s) {
-    return *std::max_element(Q[s].begin(), Q[s].end());
 }
 
 Q_LearningNetwork::Q_LearningNetwork(Map& m) :

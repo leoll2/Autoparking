@@ -35,6 +35,8 @@ class Q_LearningNetwork {
         double get_quality(unsigned int s, unsigned int a) const;
         /* Returns the reward associated to the pair state-action (s,a). */
         double get_reward(unsigned int s, unsigned int a) const;
+        /* Returns the code of an action according to epsilon-greedy policy. */
+        unsigned int get_eps_greedy_action(int s);
         /* Returns the code of the best action for the provided state. */
         unsigned int get_best_action(int s);
         /* Simulates and displays one episode on the basis of the current state of Q */

@@ -7,7 +7,13 @@
 
 #define ALPHA       1   // Learning rate
 #define GAMMA       1   // Discount factor
-#define EPSILON     0   // Exploration factor
+#define EPSILON     0.2   // Exploration factor
+
+/* Convergence detection parameters */
+
+#define CONV_INIT_DELTA     1000
+#define CONV_ALPHA          0.0001
+#define CONV_THRESHOLD      1
 
 /* Rewards */
 
