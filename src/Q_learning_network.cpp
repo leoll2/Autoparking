@@ -1,9 +1,8 @@
 #include <algorithm>
 #include <cassert>
 #include <chrono>
+#include <cstdio>
 #include <ctime>
-#include <fstream>
-#include <iostream>
 #include <set>
 #include <thread>
 #include "display.h"
@@ -81,11 +80,18 @@ float Q_LearningNetwork::get_max_state_quality(int s) {
 
 void Q_LearningNetwork::train(unsigned int iterations) {
     
+    std::ofstream log;
     unsigned int iter = 0;
     float avg_delta = CONV_INIT_DELTA;
+    
+    if (LOG_CONV_METRIC)
+        this->open_conv_log(log);
+    
     do {
+        unsigned int ret;
         ++iter;
-        if (iter % 50000 == 0) {
+        if (LOG_CONV_METRIC && (iter % LOG_ITER_INTERVAL == 0)) {
+            this->add_to_conv_log(log, iter, avg_delta);
             std::cout << "Iterations: " << iter << std::endl;
             std::cout << "Avg delta: " << avg_delta << std::endl;
         }
@@ -94,7 +100,6 @@ void Q_LearningNetwork::train(unsigned int iterations) {
         if (s1 == target_state) // if the vehicle spawned in the final state, abort this episode
             continue;
 
-        unsigned int ret;
         do {
             s1 = dummy.encode();
             unsigned int a = get_eps_greedy_action(s1);
@@ -109,15 +114,17 @@ void Q_LearningNetwork::train(unsigned int iterations) {
                 if (s2 == target_state) // stop the episode if the car reached the final state
                     break;
                 assert (Q[s1][a] <= TARGET_REWARD && "Q-matrix is diverging!");
-                avg_delta = (1-CONV_ALPHA) * avg_delta + CONV_ALPHA * abs(Q[s1][a] - old_Q_value);
+                avg_delta = (1-CONV_ZETA) * avg_delta + CONV_ZETA * abs(Q[s1][a] - old_Q_value);
             }
         } while (ret == 0);
-    } while (iter < iterations && avg_delta > CONV_THRESHOLD);
+    } while ((iter < iterations || !STOP_MAX_ITER) && (avg_delta > CONV_THRESHOLD || !STOP_CONVERGENCE));
     if (iter >= iterations)
         std::cout << "Training stopped after reaching the maximum limit of iterations." << std::endl;
     else
         std::cout << "Training stopped due to convergence." << std::endl;
     std::cout << "Performed iterations: " << iter << std::endl;
+    if (LOG_CONV_METRIC)
+        this->close_conv_log(log);
     store_into_cache();
 }
 
@@ -179,6 +186,25 @@ bool Q_LearningNetwork::store_into_cache() {
     return true;
 }
 
+void Q_LearningNetwork::open_conv_log(std::ofstream& log) {
+    char filename[32];
+    snprintf(filename, 32, "stats/%5.4lf_%5.4lf_%5.4lf.txt", ALPHA, GAMMA, EPSILON);
+    log.open(filename, std::ofstream::out);
+    if (log.is_open()) {
+        log << "alpha: " << ALPHA << " gamma: " << GAMMA << " epsilon: " << EPSILON << std::endl;
+    }
+}
+
+void Q_LearningNetwork::close_conv_log(std::ofstream& log) {
+    log.close();
+}
+
+void Q_LearningNetwork::add_to_conv_log(std::ofstream& log, unsigned int iter, float avg_delta) {
+    if (log.is_open()) {
+        log << iter << " " << avg_delta << std::endl;
+    }
+}
+
 Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     n_states(HREF_POINTS * VREF_POINTS * ANGLE_REFS),
     n_actions(30),
@@ -187,11 +213,27 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     map(m),
     target_state(Vehicle::encode_vehicle(pi/2, map.target.x, map.target.y))
 {
-    std::cout << "Initializing AI..." << std::endl;
+    std::cout << "Initializing AI..." << std::endl
+            << "Alpha: " << ALPHA << std::endl
+            << "Gamma: " << GAMMA << std::endl
+            << "Epsilon: " << EPSILON << std::endl
+            << "Limit number of iterations: " << (STOP_MAX_ITER ?
+                    "enabled" : "disabled") << std::endl
+            << "Max number of iterations: " << (STOP_MAX_ITER ? 
+                    std::to_string(MAX_ITER_FACTOR * n_states * n_actions) : "-") << std::endl
+            << "Detect convergence: " << (STOP_CONVERGENCE ? 
+                    "enabled" : "disabled") << std::endl
+            << "Convergence initial delta: " << (STOP_CONVERGENCE ?
+                    std::to_string(CONV_INIT_DELTA) : "-") << std::endl
+            << "Convergence zeta: " << (STOP_CONVERGENCE ? 
+                    std::to_string(CONV_ZETA) : "-") << std::endl
+            << "Convergence threshold: " << (STOP_CONVERGENCE ? 
+                    std::to_string(CONV_THRESHOLD) : "-") << std::endl; 
+              
     initialize_R();
     std::cout << "Matrix R ready" << std::endl;
     if (!initialize_Q()) {
-        unsigned int n_iterations = 10 * n_states * n_actions;
+        unsigned int n_iterations = MAX_ITER_FACTOR * n_states * n_actions;
         train(n_iterations);
     }
     std::cout << "Matrix Q ready" << std::endl;

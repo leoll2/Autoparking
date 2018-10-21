@@ -1,6 +1,8 @@
 #ifndef Q_LEARNINGNETWORK_H
 #define Q_LEARNINGNETWORK_H
 
+#include <fstream>
+#include <iostream>
 #include <vector>
 #include "AI_params.h"
 #include "map.h"
@@ -20,6 +22,9 @@ class Q_LearningNetwork {
         bool initialize_Q();
         void initialize_R();
         void train(unsigned int n_iterations);
+        void open_conv_log(std::ofstream& log);
+        void close_conv_log(std::ofstream& log);
+        void add_to_conv_log(std::ofstream& log, unsigned int iter, float avg_delta);
         bool restore_from_cache();
         bool store_into_cache();
     public:
