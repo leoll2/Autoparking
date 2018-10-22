@@ -10,6 +10,13 @@ class SimpleParkingMap : public Map {
         SimpleParkingMap();
 };
 
+class TwistedParkingMap : public Map {
+    private:
+        void initialize();
+    public:
+        TwistedParkingMap();
+};
+
 
 #endif /* MAPS_H */
 

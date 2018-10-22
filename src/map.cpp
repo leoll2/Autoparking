@@ -35,6 +35,6 @@ bool Map::collides_with_obstacles(const Arc& a) const {
 
 Map::Map(unsigned int w, unsigned int h, Coordinate t) :
 	width(w), 
-        height(h),
-        target(t)
+    height(h),
+    target(t)
 {}

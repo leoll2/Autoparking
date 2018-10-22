@@ -89,12 +89,11 @@ void Q_LearningNetwork::train(unsigned int iterations) {
     
     do {
         unsigned int ret;
-        ++iter;
         if (LOG_CONV_METRIC && (iter % LOG_ITER_INTERVAL == 0)) {
             this->add_to_conv_log(log, iter, avg_delta);
-            std::cout << "Iterations: " << iter << std::endl;
-            std::cout << "Avg delta: " << avg_delta << std::endl;
+            std::cout << "Iterations: " << iter << " \tdelta: " << avg_delta << std::endl;
         }
+        ++iter;
         Vehicle dummy = Vehicle::random_vehicle();
         unsigned int s1 = dummy.encode();
         if (s1 == target_state) // if the vehicle spawned in the final state, abort this episode
@@ -188,7 +187,7 @@ bool Q_LearningNetwork::store_into_cache() {
 
 void Q_LearningNetwork::open_conv_log(std::ofstream& log) {
     char filename[32];
-    snprintf(filename, 32, "stats/%5.4lf_%5.4lf_%5.4lf.txt", ALPHA, GAMMA, EPSILON);
+    snprintf(filename, 32, "stats/%3.2lf_%3.2lf_%3.2lf.txt", ALPHA, GAMMA, EPSILON);
     log.open(filename, std::ofstream::out);
     if (log.is_open()) {
         log << "alpha: " << ALPHA << " gamma: " << GAMMA << " epsilon: " << EPSILON << std::endl;
@@ -260,6 +259,8 @@ double Q_LearningNetwork::get_reward(unsigned int s, unsigned int a) const {
 }
 
 void Q_LearningNetwork::simulate_episode() {
+	unsigned int n_moves = 0;
+
     // Spawn the vehicle in a random legal position
     Vehicle car = Vehicle::random_vehicle();
     while (!map.is_within_boundaries(car.to_polygon()) || 
@@ -287,15 +288,14 @@ void Q_LearningNetwork::simulate_episode() {
         Maneuver mnv(get_best_action(state));
         // Move the vehicle accordingly
         ret_move = car.move(map, mnv);
+        ++n_moves;
         // Show the new position
-        //display_all_entities(map, car);
         display_all_entities_enhanced(map, ghost, car, 10, 50);
         // If the vehicle reached the final state, wait a bit then return
         if ((ret_move == 0) && ((state = car.encode()) == target_state)) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(600));
+            //std::cout << n_moves << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             return;
-        } else {
-            //std::this_thread::sleep_for(std::chrono::milliseconds(200));
         }
     } while (ret_move == 0);
 }

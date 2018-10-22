@@ -7,7 +7,7 @@
 
 #define ALPHA       1.0     // Learning rate
 #define GAMMA       1.0     // Discount factor
-#define EPSILON     0.2     // Exploration factor
+#define EPSILON     0.5     // Exploration factor
 
 /* Stop criteria */
 
@@ -19,7 +19,7 @@
 
 #define CONV_INIT_DELTA     1000
 #define CONV_ZETA           0.0001
-#define CONV_THRESHOLD      1.0
+#define CONV_THRESHOLD      0.5
 
 /* Rewards */
 

@@ -24,3 +24,28 @@ SimpleParkingMap::SimpleParkingMap() : Map(HREF_POINTS, VREF_POINTS,
 {
     initialize();
 }
+
+void TwistedParkingMap::initialize() {
+    /* Add two rectangular obstacles */
+    std::vector<Coordinate> ob1_coords = {	//must be counterclockwise
+            {0*SPACE_UNIT,  16*SPACE_UNIT},
+            {5*SPACE_UNIT,  16*SPACE_UNIT},
+            {5*SPACE_UNIT,  24*SPACE_UNIT},
+            {0*SPACE_UNIT,  24*SPACE_UNIT}};
+    Polygon ob1(ob1_coords);
+    this->add_obstacle(ob1);
+
+    std::vector<Coordinate> ob2_coords = {	//must be counterclockwise
+            {7*SPACE_UNIT,  0*SPACE_UNIT},
+            {12*SPACE_UNIT, 0*SPACE_UNIT},
+            {12*SPACE_UNIT, 6*SPACE_UNIT},
+            {7*SPACE_UNIT,  6*SPACE_UNIT}};
+    Polygon ob2(ob2_coords);
+    this->add_obstacle(ob2);
+}
+
+TwistedParkingMap::TwistedParkingMap() : Map(HREF_POINTS, VREF_POINTS, 
+                               Coordinate(8*SPACE_UNIT, 14*SPACE_UNIT))
+{
+    initialize();
+}

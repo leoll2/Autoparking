@@ -245,7 +245,7 @@ void display_rewards(const Q_LearningNetwork& ai) {
         double orientation = state[0];
         double x = state[1];
         double y = state[2];
-        if (abs(orientation - 1.61) > 0.05)         // consider only states with orientation == pi/2
+        if (abs(orientation - 1.61) > 0.05)   // consider only states with orientation == pi/2
             continue;
         // Draw a black circle where the state is
         draw_circle(x, y, 8, al_map_rgb(0,0,0));
