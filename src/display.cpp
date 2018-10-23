@@ -15,16 +15,35 @@
 #define COLOR_GREEN	al_map_rgb(0,102,0)
 
 
+/**
+ * Scale the coordinate to fit in the screen.
+ * 
+ * @param a the original coordinate
+ * @return the transformed coordinate
+ */
 float op_scale(float a) {
     return a / COORD_PIXEL_RATIO;
 }
 
+
+/**
+ * Convert the coordinate to another coordinate system with reversed axis.
+ * 
+ * @param a the original coordinate
+ * @return the transformed coordinate
+ */
 float op_reverse(float a) {
     return VREF_POINTS * VISUAL_UNIT - a;
 }
 
-/* This is used in a transformation of an array of (x,y) interleaved 
- * points to reverse the y coordinate only.*/
+
+/**
+ * Utility function used in the transformation of an array of (x,y) interleaved 
+ * points to reverse the y coordinate only.
+ * 
+ * @param a the original coordinate
+ * @return reversed coordinate if it was 'y', else the original coordinate
+ */
 float op_reverse_array(float a) {
     static bool even = true;
     even = !even;
@@ -34,6 +53,13 @@ float op_reverse_array(float a) {
         return a;
 }
 
+
+/**
+ * Graphics initialization routine.
+ * 
+ * @param display pointer to Allegro display
+ * @return true if success, false otherwise
+ */
 bool initialize_display(ALLEGRO_DISPLAY *display) {
     if(!al_init()) {
         std::cerr << "failed to initialize allegro!" << std::endl;
@@ -47,6 +73,12 @@ bool initialize_display(ALLEGRO_DISPLAY *display) {
     return true;
 }
 
+
+/**
+ * Routine for the initialization of Allegro drawing primitives.
+ * 
+ * @return true if success, false otherwise
+ */
 bool initialize_primitives() {
     if (!al_init_primitives_addon()) {
         std::cerr << "failed to initialize allegro5 primitives!" << std::endl;
@@ -55,47 +87,96 @@ bool initialize_primitives() {
     return true;
 }
 
+
+/**
+ * Draw a filled polygon given its vertices.
+ * 
+ * @param n_vertices the number of vertices
+ * @param vertices the array of point coordinates, interleaved x and y
+ * @param color the color used to fill the area
+ */
 void draw_polygon(unsigned int n_vertices, float* vertices, ALLEGRO_COLOR color) {
-    //scale the coordinates to appropriate pixel lengths
+    
+    // Scale the coordinates to appropriate pixel lengths
     std::transform(vertices, vertices + 2*n_vertices, vertices, op_scale);
-    //reverse the y axis
+    // Reverse the y axis to fit in this application coordinate system
     std::transform(vertices, vertices + 2*n_vertices, vertices, op_reverse_array);
 
     al_draw_filled_polygon(vertices, n_vertices, color);
     delete[] vertices;
 }
 
+
+/**
+ * Draw a filled circle given position and radius.
+ * 
+ * @param cx the x coordinate of the center
+ * @param cy the y coordinate of the center
+ * @param r the radius
+ * @param color the color used to fill the area
+ */
 void draw_circle(float cx, float cy, float r, ALLEGRO_COLOR color) {
-    // Adapt the coordinates to allegro
+    
+    // Adjust the coordinates
     cx = op_scale(cx);
     cy = op_reverse(op_scale(cy));
     r = op_scale(r);
-    // Draw the circle
+    
     al_draw_filled_circle(cx, cy, r, color);
 }
 
+
+/**
+ * Draw the field and its obstacles.
+ * 
+ * @param map a reference to the map
+ */
 void draw_map(const Map& map) {
+    
     // Clear the field
     al_clear_to_color(COLOR_LIME);
+    
     // Draw the map
     al_draw_filled_rectangle(0, 0, map.width * VISUAL_UNIT, map.height * VISUAL_UNIT, COLOR_GREY);
+    
     // Draw the obstacles
     for (auto ob : map.obstacles)
         draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
 }
 
-void load_into_array(float* window, const Coordinate& A, const Coordinate& B,
+
+/**
+ * Utility function to store the coordinates of a quadrangle into an array whose
+ * format complies with Allegro functions.
+ * 
+ * @param points the array where to store the points in Allegro format 
+ * @param A the first Coordinate
+ * @param B the second Coordinate
+ * @param C the third Coordinate
+ * @param D the fourth Coordinate
+ */
+void load_into_array(float* points, const Coordinate& A, const Coordinate& B,
                                     const Coordinate& C, const Coordinate& D) {
-    window[0] = A.x;
-    window[1] = A.y;
-    window[2] = B.x;
-    window[3] = B.y;
-    window[4] = C.x;
-    window[5] = C.y;
-    window[6] = D.x;
-    window[7] = D.y;
+    points[0] = A.x;
+    points[1] = A.y;
+    points[2] = B.x;
+    points[3] = B.y;
+    points[4] = C.x;
+    points[5] = C.y;
+    points[6] = D.x;
+    points[7] = D.y;
 }
 
+
+/**
+ * Draw a filled quadrangle.
+ * 
+ * @param A the first Coordinate
+ * @param B the second Coordinate
+ * @param C the third Coordinate
+ * @param D the fourth Coordinate
+ * @param color the color used to fill the area
+ */
 void draw_quadrangle(const Coordinate& A, const Coordinate& B,
                      const Coordinate& C, const Coordinate& D,
                      ALLEGRO_COLOR color) {
@@ -104,14 +185,22 @@ void draw_quadrangle(const Coordinate& A, const Coordinate& B,
     draw_polygon(4, corners, color);
 }
 
+
+/**
+ * Draw a car with all its fancy graphical details.
+ * 
+ * @param map the map containing the car (used for collision detection)
+ * @param car the car to be drawn
+ */
 void draw_car(const Map& map, const Vehicle& car) {
-    // Draw the body of the car
+    
+    // Draw the body of the car: red if in a bad position, green otherwise 
     if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
         draw_polygon(4, car.get_vertices2(), COLOR_RED);
     else
         draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
     
-    // Compute some reference points
+    // Compute some useful reference points
     std::vector<Coordinate> car_vertices = car.get_vertices1();
     Coordinate circumcenter = (car_vertices[0] + car_vertices[2]) * 0.5;
     Coordinate right_center = (car_vertices[1] + car_vertices[2]) * 0.5;
@@ -119,7 +208,7 @@ void draw_car(const Map& map, const Vehicle& car) {
     Direction fore = front_center - circumcenter;
     Direction right = right_center -  circumcenter;
     
-    // Draw windows
+    // Draw the windows of the car (just for the sake of it)
     // Left window
     Coordinate A = circumcenter -0.9 * right -0.8  * fore;
     Coordinate B = circumcenter -0.8 * right -0.75 * fore;
@@ -133,7 +222,7 @@ void draw_car(const Map& map, const Vehicle& car) {
     D = circumcenter +0.8 * right +0.2  * fore;
     draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
     // Windscreen
-    A = circumcenter -0.9 * right +0.6 * fore;
+    A = circumcenter -0.9 * right +0.6  * fore;
     B = circumcenter -0.8 * right +0.3  * fore;
     C = circumcenter +0.8 * right +0.3  * fore;
     D = circumcenter +0.9 * right +0.6  * fore;
@@ -145,12 +234,12 @@ void draw_car(const Map& map, const Vehicle& car) {
     D = circumcenter -0.8 * right -0.8  * fore;
     draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
     
-    // Draw headlights
+    // Draw the headlights of the car (just for the sake of it, again)
     // Left headlight
     A = circumcenter -0.9 * right +0.9  * fore;
     B = circumcenter -0.7 * right +0.9  * fore;
-    C = circumcenter -0.7 * right +0.95  * fore;
-    D = circumcenter -0.9 * right +0.95  * fore;
+    C = circumcenter -0.7 * right +0.95 * fore;
+    D = circumcenter -0.9 * right +0.95 * fore;
     draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
     // Right headlight
     A = circumcenter +0.7 * right +0.9  * fore;
@@ -160,11 +249,26 @@ void draw_car(const Map& map, const Vehicle& car) {
     draw_quadrangle(A, B, C, D, COLOR_SKYBLUE);
 }
 
+
+/**
+ * Initialize the Allegro graphics.
+ * 
+ * @param display the pointer to Allegro display
+ * @return true if success, false otherwise
+ */
 bool start_graphics(ALLEGRO_DISPLAY *display) {
 	return initialize_display(display) && initialize_primitives();
 }
 
+
+/**
+ * Show all the entities within the field.
+ * 
+ * @param map the map
+ * @param car the car within the map
+ */
 void display_all_entities(const Map& map, const Vehicle& car) {
+    
     // Draw the field
     draw_map(map);
 
@@ -174,6 +278,19 @@ void display_all_entities(const Map& map, const Vehicle& car) {
     al_flip_display();
 }
 
+
+/**
+ * Draw all the entities of the field adding an animation to the car to look like
+ * when performing a maneuver. The quality of the animation depends on the
+ * number of frames. It's also possible to specify its speed. The movement effect
+ * is generated using an (approximated) interpolation of position and orientation.
+ * 
+ * @param map the map
+ * @param car_start the initial position of the car
+ * @param car_end the end position of the car
+ * @param frames the number of frames in the animation
+ * @param millis the delay between two frames in the animation
+ */
 void display_all_entities_enhanced(const Map& map, const Vehicle& car_start, 
                                    const Vehicle& car_end, unsigned int frames,
                                    unsigned int millis) {
@@ -212,6 +329,13 @@ void display_all_entities_enhanced(const Map& map, const Vehicle& car_start,
     }
 }
 
+
+/**
+ * Generate a color for a reward.
+ * 
+ * @param reward the reward
+ * @return the color associated to that reward
+ */
 ALLEGRO_COLOR compute_reward_color(float reward) {
     unsigned int red = 0, green = 0, blue = 0;
     if (reward == 1000)
@@ -224,6 +348,16 @@ ALLEGRO_COLOR compute_reward_color(float reward) {
     return al_map_rgb(red, green, blue);
 }
 
+
+/**
+ * Computes the offset position of the reward associate to an action with respect
+ * to the state center.This is used to get a visual representation of rewards.
+ * 
+ * @param x the x of state center
+ * @param y the y of state center
+ * @param mvn the maneuver
+ * @return the position
+ */
 std::vector<float> compute_reward_pos(float x, float y, const Maneuver& mvn) {
     std::vector<float> ret(2);
     y += mvn.get_verse() * mvn.get_displacement() / 50 * 6;
@@ -234,6 +368,12 @@ std::vector<float> compute_reward_pos(float x, float y, const Maneuver& mvn) {
     return ret;
 }
 
+
+/**
+ * Provide a visual representation of a certain subset of the rewards.
+ * 
+ * @param ai the Q-learning network
+ */
 void display_rewards(const Q_LearningNetwork& ai) {
     
     draw_map(ai.get_map());
@@ -263,6 +403,12 @@ void display_rewards(const Q_LearningNetwork& ai) {
     al_flip_display();
 }
 
+
+/**
+ * Close the Allegro graphics.
+ * 
+ * @param display the pointer to Allegro display
+ */
 void end_graphics(ALLEGRO_DISPLAY *display) {
 	al_destroy_display(display);
 }

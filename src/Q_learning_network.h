@@ -30,20 +30,28 @@ class Q_LearningNetwork {
     public:
         /* Constructor */
         Q_LearningNetwork(Map& m);
+        
         /* Returns the number of states */
         unsigned int get_n_states() const;
+        
         /* Returns the number of actions */
         unsigned int get_n_actions() const;
+        
         /* Returns a reference to the map */
         Map& get_map() const;
+        
         /* Returns the quality value associate to the pair state-action (s,a). */
         double get_quality(unsigned int s, unsigned int a) const;
+        
         /* Returns the reward associated to the pair state-action (s,a). */
         double get_reward(unsigned int s, unsigned int a) const;
+        
         /* Returns the code of an action according to epsilon-greedy policy. */
         unsigned int get_eps_greedy_action(int s);
+        
         /* Returns the code of the best action for the provided state. */
         unsigned int get_best_action(int s);
+        
         /* Simulates and displays one episode on the basis of the current state of Q */
         void simulate_episode();
 };

@@ -1,5 +1,6 @@
 #include <allegro5/allegro.h>	//never remove! (obscure compatibility reasons)
 #include <chrono>
+#include <csignal>
 #include <ctime>
 #include <iostream>
 #include <memory>
@@ -11,37 +12,52 @@
 #include "shapes.h"
 #include "vehicle.h"
 
+volatile std::sig_atomic_t stopflag = 0;
+
+void halt_simulation(int signal) {
+    stopflag = 1;
+}
+
 int main(int argc, char **argv) {
 
-    srand(time(NULL));
-
     ALLEGRO_DISPLAY *display = NULL;
-	std::unique_ptr<Map> map(nullptr);
+    std::unique_ptr<Map> map(nullptr);
+    
+    /* Initialize the random generator */
+    srand(time(NULL));
 
     /* Create the map */
     switch (CHOSEN_MAP) {
-		case 1:
-			map.reset(new SimpleParkingMap);
-			break;
-		case 2:
-			map.reset(new TwistedParkingMap);
-			break;
-		default:
-			std::cerr << "Non-existing map" << std::endl;
-			return -1;
-	}
+        case 1:
+            map.reset(new SimpleParkingMap);
+            break;
+        case 2:
+            map.reset(new TwistedParkingMap);
+            break;
+        default:
+            std::cerr << "Non-existing map" << std::endl;
+            return -1;
+    }
 
+    /* Initialize the Q-learning AI */
     Q_LearningNetwork ai(*map);
     
+    /* Initialize the graphics */
     if(!start_graphics(display))
         return -1;
     
-    while(1) {
+    /* Halt the simulation at the end of the current episode in case of SIGINT */
+    signal(SIGINT, halt_simulation);
+    
+    /* Keep simulating episodes of autoparking */
+    while(!stopflag) {
         ai.simulate_episode();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
     
+    /* Close the graphics */
     end_graphics(display);
 
+    std::cout << "The simulation is over!" << std::endl;
+    
     return 0;
 }

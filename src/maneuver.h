@@ -38,7 +38,7 @@ class Maneuver {
         TurningRadius turning_radius;	// Steering radius
         Displacement displacement;	// Distance covered
 
-        /* Decode a maneuver from its code. Initializes the attributes with proper values. */
+        /* Decode a maneuver from its code. Initializes attributes with proper values. */
         void decode_maneuver(unsigned int code);
 
     public:
