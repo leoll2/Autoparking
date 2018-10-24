@@ -5,12 +5,13 @@
 #include "map.h"
 #include "util.h"
 
-using namespace std;
+/******************************************************************************/
+/*        VEHICLE: a vehicle with rectangular body and front steering         */
+/******************************************************************************/
 
-/* A rectangular vehicle. */
 class Vehicle {
     private:
-        unsigned int length,  // length of the vehicle
+        unsigned int length,        // length of the vehicle
             width;                  // width of the vehicle
         double orientation;         // vehicle's head facing angle (between 0 and pi)
         Coordinate rear_center,     // rear middle coordinate
