@@ -313,8 +313,8 @@ void display_all_entities_enhanced(const Map& map, const Vehicle& car_start,
             std::this_thread::sleep_for(std::chrono::milliseconds(millis));
         }
     } else {            // if the vehicle is steering
-        double r = 0.5 * dist / sin(abs(psi)/2);
-        double theta = 0.5 * (pi - abs(psi));
+        double r = 0.5 * dist / std::sin(std::abs(psi)/2);
+        double theta = 0.5 * (pi - std::abs(psi));
         Coordinate rot_center = (psi < 0) ?
                 start_pos + Direction::from_angle(d_angle - theta) * r :
                 start_pos + Direction::from_angle(d_angle + theta) * r;
@@ -385,7 +385,7 @@ void display_rewards(const Q_LearningNetwork& ai) {
         double orientation = state[0];
         double x = state[1];
         double y = state[2];
-        if (abs(orientation - 1.61) > 0.05)   // consider only states with orientation == pi/2
+        if (std::abs(orientation - 1.61) > 0.05)   // consider only states with orientation == pi/2
             continue;
         // Draw a black circle where the state is
         draw_circle(x, y, 8, al_map_rgb(0,0,0));

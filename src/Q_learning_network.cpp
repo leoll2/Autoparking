@@ -172,7 +172,7 @@ void Q_LearningNetwork::train(unsigned int iterations) {
                 if (s2 == target_state) // stop the episode if the car reached the final state
                     break;
                 assert (Q[s1][a] <= TARGET_REWARD && "Q-matrix is diverging!");
-                avg_delta = (1-CONV_ZETA) * avg_delta + CONV_ZETA * abs(Q[s1][a] - old_Q_value);
+                avg_delta = (1-CONV_ZETA) * avg_delta + CONV_ZETA * std::abs(Q[s1][a] - old_Q_value);
             }
         } while (ret == 0);
     } while ((iter < iterations || !STOP_MAX_ITER) && (avg_delta > CONV_THRESHOLD || !STOP_CONVERGENCE));
