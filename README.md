@@ -2,4 +2,4 @@
 
 Project for the Neural Networks exam at SSSUP.
 
-![](autoparking.gif)
+![](img/autoparking.gif)
