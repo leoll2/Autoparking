@@ -7,6 +7,9 @@
 #include "AI_params.h"
 #include "map.h"
 
+/******************************************************************************/
+/*     Q-LEARNING NETWORK: reinforcement learning applied to autoparking      */
+/******************************************************************************/
 
 class Q_LearningNetwork {
     private:

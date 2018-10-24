@@ -10,6 +10,11 @@
 #include "vehicle_params.h"
 #include "vehicle.h"
 
+
+/******************************************************************************/
+/*     Q-LEARNING NETWORK: reinforcement learning applied to autoparking      */
+/******************************************************************************/
+
 /**
  * Initialize quality matrix Q.
  * 

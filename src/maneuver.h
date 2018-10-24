@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <iostream>
 
+/******************************************************************************/
+/*              MANEUVER: an action performed by a vehicle                    */
+/******************************************************************************/
+
 #define NUM_RADI	2
 #define NUM_DISP	3
 #define MIN_RADI	500

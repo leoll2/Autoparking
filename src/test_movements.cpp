@@ -11,6 +11,7 @@
 #include "vehicle_params.h"
 #include "maps.h"
 
+/* Mapping between keys and maneuvers. */
 unsigned int get_maneuver_code(int c) {
     switch(c) {
         case 'q':
@@ -80,37 +81,36 @@ unsigned int get_maneuver_code(int c) {
 
 int main(int argc, char **argv) {
 	
-	ALLEGRO_DISPLAY *display = NULL;
-	
-	if(!start_graphics(display))
-		return -1;
-        
-        SimpleParkingMap map;
+    ALLEGRO_DISPLAY *display = NULL;
 
-        /* Initialize car position and display it */
-        Vehicle car = Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(4*SPACE_UNIT, 8*SPACE_UNIT), pi/2);
-        display_all_entities(map, car);
-        
-        int c;
-        unsigned int ret;
-        std::cout << "Insert characters to perform maneuvers. Write . to exit.\n";
-        do {
-          c = getchar();
-          if (c == '\n')
-              continue;
-          unsigned int mnv_code = get_maneuver_code(c);
-          if (mnv_code >= 30)
-              std::cout << "Invalid key" << std::endl;
-          else {
-              Vehicle ghost(car);
-              Maneuver mnv(mnv_code);
-              ret = car.move(map, mnv);
-              std::cout << ret << std::endl;
-              display_all_entities_enhanced(map, ghost, car, 10, 50);
-          }
-        } while (c != '.');
-        
-	end_graphics(display);
+    if(!start_graphics(display))
+        return -1;
 
-	return 0;
+    SimpleParkingMap map;
+
+    Vehicle car = Vehicle(CAR_LENGTH, CAR_WIDTH, Coordinate(4*SPACE_UNIT, 8*SPACE_UNIT), pi/2);
+    display_all_entities(map, car);
+
+    int c;
+    unsigned int ret;
+    std::cout << "Insert characters to perform maneuvers. Write . to exit.\n";
+    do {
+        c = getchar();
+        if (c == '\n')
+            continue;
+        unsigned int mnv_code = get_maneuver_code(c);
+        if (mnv_code >= 30)
+            std::cout << "Invalid key" << std::endl;
+        else {
+            Vehicle ghost(car);
+            Maneuver mnv(mnv_code);
+            ret = car.move(map, mnv);
+            std::cout << ret << std::endl;
+            display_all_entities_enhanced(map, ghost, car, 10, 50);
+        }
+    } while (c != '.');
+
+    end_graphics(display);
+
+    return 0;
 }

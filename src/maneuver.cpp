@@ -4,6 +4,10 @@
 #include "maneuver.h"
 
 
+/******************************************************************************/
+/*              MANEUVER: an action performed by a vehicle                    */
+/******************************************************************************/
+
 /**
  * Get the verse associated to the maneuver.
  * 

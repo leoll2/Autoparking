@@ -5,6 +5,10 @@
 #include "field_params.h"
 #include "shapes.h"
 
+/******************************************************************************/
+/*              MAP: the field where the vehicle is moving                    */
+/******************************************************************************/
+
 class Map {
     public:
         const unsigned int width, height;

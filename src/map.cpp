@@ -1,5 +1,9 @@
 #include "map.h"
 
+/******************************************************************************/
+/*              MAP: the field where the vehicle is moving                    */
+/******************************************************************************/
+
 /**
  * Check if a coordinate is within the boundaries of the map (borders included).
  * 

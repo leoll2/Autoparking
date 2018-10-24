@@ -10,38 +10,38 @@
 
 int main(int argc, char **argv) {
 	
-	ALLEGRO_DISPLAY *display = NULL;
-	
-	if(!start_graphics(display))
-		return -1;
+    ALLEGRO_DISPLAY *display = NULL;
 
-	/* Create the map */
-	Map m(HREF_POINTS, VREF_POINTS, Coordinate(0, 0));
-	
-	/* Add two rectangular obstacles */
-	std::vector<Coordinate> ob1_coords = {	//must be counterclockwise
-		{7*SPACE_UNIT, 	18*SPACE_UNIT},
-		{12*SPACE_UNIT, 18*SPACE_UNIT},
-		{12*SPACE_UNIT, 24*SPACE_UNIT},
-		{7*SPACE_UNIT, 	24*SPACE_UNIT}};
-	Polygon ob1(ob1_coords);
-	m.add_obstacle(ob1);
-	
-	std::vector<Coordinate> ob2_coords = {	//must be counterclockwise
-		{7*SPACE_UNIT, 	0*SPACE_UNIT},
-		{12*SPACE_UNIT, 0*SPACE_UNIT},
-		{12*SPACE_UNIT, 6*SPACE_UNIT},
-		{7*SPACE_UNIT, 	6*SPACE_UNIT}};
-	Polygon ob2(ob2_coords);
-	m.add_obstacle(ob2);
+    if(!start_graphics(display))
+        return -1;
 
-	/* Keep spawning the car in random positions */
-	while(1) {
-		Vehicle car = Vehicle::random_vehicle();
-		display_all_entities(m, car);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-	}
-	end_graphics(display);
+    /* Create the map */
+    Map m(HREF_POINTS, VREF_POINTS, Coordinate(0, 0));
 
-	return 0;
+    /* Add two rectangular obstacles */
+    std::vector<Coordinate> ob1_coords = {	//must be counterclockwise
+            {7*SPACE_UNIT, 	18*SPACE_UNIT},
+            {12*SPACE_UNIT, 18*SPACE_UNIT},
+            {12*SPACE_UNIT, 24*SPACE_UNIT},
+            {7*SPACE_UNIT, 	24*SPACE_UNIT}};
+    Polygon ob1(ob1_coords);
+    m.add_obstacle(ob1);
+
+    std::vector<Coordinate> ob2_coords = {	//must be counterclockwise
+            {7*SPACE_UNIT, 	0*SPACE_UNIT},
+            {12*SPACE_UNIT, 0*SPACE_UNIT},
+            {12*SPACE_UNIT, 6*SPACE_UNIT},
+            {7*SPACE_UNIT, 	6*SPACE_UNIT}};
+    Polygon ob2(ob2_coords);
+    m.add_obstacle(ob2);
+
+    /* Keep spawning the car in random positions */
+    while(1) {
+        Vehicle car = Vehicle::random_vehicle();
+        display_all_entities(m, car);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    end_graphics(display);
+
+    return 0;
 }
