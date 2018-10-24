@@ -3,7 +3,7 @@
 #ifndef FIELD_PARAMS_H
 #define FIELD_PARAMS_H
 
-#define CHOSEN_MAP      1       // ID of the chosen map
+#define CHOSEN_MAP      2       // ID of the chosen map
 #define SPACE_UNIT	50      // (cm)
 #define HREF_POINTS	12
 #define VREF_POINTS	24

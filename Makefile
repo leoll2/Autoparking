@@ -16,13 +16,13 @@ build/main.o: src/main.cpp
 build/maneuver.o: src/maneuver.cpp src/maneuver.h
 	$(CC) $(CFLAGS) -c src/maneuver.cpp -o build/maneuver.o
 
-build/map.o: src/map.cpp src/map.h
+build/map.o: src/map.cpp src/map.h conf/field_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/map.cpp -o build/map.o
 	
-build/maps.o: src/maps.cpp src/maps.h
+build/maps.o: src/maps.cpp src/maps.h conf/field_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/maps.cpp -o build/maps.o
 
-build/Q_learning_network.o: src/Q_learning_network.cpp src/Q_learning_network.h conf/AI_params.h
+build/Q_learning_network.o: src/Q_learning_network.cpp src/Q_learning_network.h conf/AI_params.h conf/field_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/Q_learning_network.cpp -o build/Q_learning_network.o
 
 build/shapes.o: src/shapes.cpp src/shapes.h

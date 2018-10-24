@@ -6,6 +6,7 @@
 #include <set>
 #include <thread>
 #include "display.h"
+#include "field_params.h"
 #include "Q_learning_network.h"
 #include "vehicle_params.h"
 #include "vehicle.h"
@@ -199,8 +200,24 @@ void Q_LearningNetwork::train(unsigned int iterations) {
  * @return true if success, false otherwise
  */
 bool Q_LearningNetwork::restore_from_cache() {
-    std::ifstream r("cache/R");
-    std::ifstream q("cache/Q");
+    
+    /*std::ifstream r("cache/R");
+    std::ifstream q("cache/Q");*/
+    
+    std::ifstream r, q;
+    
+    switch (CHOSEN_MAP) {
+        case 1:
+            r.open("cache/R_1", std::ifstream::in);
+            q.open("cache/Q_1", std::ifstream::in);
+            break;
+        case 2:
+            r.open("cache/R_2", std::ifstream::in);
+            q.open("cache/Q_2", std::ifstream::in);
+            break;
+        default:
+            return false;
+    }
     
     if (r.is_open() && q.is_open()) {
         unsigned int s_r, a_r, s_q, a_q;
@@ -237,8 +254,24 @@ bool Q_LearningNetwork::restore_from_cache() {
  * @return true if success, false otherwise
  */
 bool Q_LearningNetwork::store_into_cache() {
-    std::ofstream r("cache/R");
-    std::ofstream q("cache/Q");
+    
+    /*std::ofstream r("cache/R");
+    std::ofstream q("cache/Q");*/
+    std::ofstream r, q;
+    
+    switch (CHOSEN_MAP) {
+        case 1:
+            r.open("cache/R_1", std::ofstream::out);
+            q.open("cache/Q_1", std::ofstream::out);
+            break;
+        case 2:
+            r.open("cache/R_2", std::ofstream::out);
+            q.open("cache/Q_2", std::ofstream::out);
+            break;
+        default:
+            return false;
+    }
+    
     if (r.is_open() && q.is_open()) {
         r << n_states << " " << n_actions << "\n";
         q << n_states << " " << n_actions << "\n";
