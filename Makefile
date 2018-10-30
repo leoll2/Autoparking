@@ -10,7 +10,7 @@ all: main test_maneuver test_shapes test_collision test_movements
 build/display.o: src/display.cpp src/display.h conf/display_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/display.cpp -o build/display.o
 
-build/main.o: src/main.cpp
+build/main.o: src/main.cpp conf/field_params.h
 	$(CC) $(CFLAGS) $(CONF) -c src/main.cpp -o build/main.o
 
 build/maneuver.o: src/maneuver.cpp src/maneuver.h
