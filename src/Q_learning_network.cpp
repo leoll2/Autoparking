@@ -372,7 +372,7 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     
     // Initialize quality matrix Q
     if (!initialize_Q()) {
-        unsigned int n_iterations = MAX_ITER_FACTOR * n_states * n_actions;
+        unsigned int n_iterations = static_cast<unsigned int>(MAX_ITER_FACTOR * n_states * n_actions);
         train(n_iterations);
     }
     std::cout << "Matrix Q ready" << std::endl;
