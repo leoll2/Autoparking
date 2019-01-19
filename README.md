@@ -6,7 +6,8 @@ This is how the trained model looks like:
 
 ![](img/autoparking.gif)
 
-## Implementation
+
+## Implementation details
 
 + Everything has been implemented from scratch by me, with the only exception of graphics libraries (Allegro).  
 + Everything has been implemented in C/C++.  
@@ -24,6 +25,63 @@ This is how the trained model looks like:
 **README** -> this file  
 **src** -> contains the most important source files, here's the core of the application  
 **stats** -> contains some data for statistical purposes generated during the training, if logging is enabled  
+
+## Installation
+
+First of all, download this repository with
+```
+git clone https://www.github.com/leoll2/Autoparking.git
+```
+
+Then, you need to install Allegro5. The following steps apply to Debian/Ubuntu and are based on the official [wiki](https://wiki.allegro.cc/index.php?title=Install_Allegro5_From_Git/Linux/Debian). Installation on other distros is similar, yet some dependencies may differ. For instance, Centos/RHEL users shall refer to the relative [documentation](https://wiki.allegro.cc/index.php?title=Install_Allegro5_From_Git/Linux/Centos).
+Honestly, I'm not sure which deps are strictly necessary and which are not, but unless you have limited storage capacity, I advise to download them all.
+
+First, setup your repo list
+```
+cd /etc/apt/
+sudo gedit sources.list
+```
+and add `contrib` and `free` at the end of those lines starting with deb or deb-src.
+
+```sudo apt-get update```
+
+Now install required dependencies:
+```
+sudo apt-get install build-essential git cmake cmake-curses-gui xorg-dev libgl1-mesa-dev libglu1-mesa-dev
+```
+and "optional" ones:
+```
+sudo apt-get install -y cmake g++ freeglut3-dev libxcursor-dev libpng-dev libjpeg-dev libfreetype6-dev libgtk2.0-dev libasound2-dev libpulse-dev libopenal-dev libflac-dev libdumb1-dev libvorbis-dev libphysfs-dev
+```
+
+From the Autoparking directory, clone the Allegro5 git repository.
+```
+git clone https://github.com/liballeg/allegro5.git
+```
+and switch to version 5.2.4:
+```
+git checkout 5.2.4
+```
+Setup the compilation:
+```
+mkdir build
+cd build
+ccmake -DCMAKE_INSTALL_PREFIX=/usr ..
+```
+Inside the cmake environment, press 'C' (configure) and 'E' if it complains about few missing libraries (don't worry, it still works). Then press 'G' (generate).
+
+Here comes the fun, compilation:
+```make```
+You can optionally add the -j option to parallelize (speed up) the compilation on multiple cores.  
+Finally, install:
+```make install```
+
+If all the previous steps went fine, Allegro5 is properly installed and setup.  
+All you need now is to compile the Autoparking application, which is very easy. Switch back to the Autoparking directory, and run:
+```make```
+
+To run the simulation, type:
+```bin/main```
 
 ## Disclaimer
 
