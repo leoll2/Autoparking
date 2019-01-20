@@ -7,13 +7,40 @@
 #include "field_params.h"
 #include "maneuver.h"
 
-#define COLOR_LIME	al_map_rgb(200,255,140)
-#define COLOR_AMARANTH	al_map_rgb(100,0,0)
-#define COLOR_GREY	al_map_rgb(96,96,96)
-#define COLOR_SKYBLUE	al_map_rgb(135,206,235)
-#define COLOR_RED	al_map_rgb(255,0,0)
-#define COLOR_GREEN	al_map_rgb(0,102,0)
+#define COLOR_LIME      al_map_rgb(200,255,140)
+#define COLOR_AMARANTH  al_map_rgb(100,0,0)
+#define COLOR_GREY      al_map_rgb(96,96,96)
+#define COLOR_SKYBLUE   al_map_rgb(135,206,235)
+#define COLOR_RED       al_map_rgb(255,0,0)
+#define COLOR_GREEN     al_map_rgb(0,102,0)
 
+
+ALLEGRO_FONT *font = NULL;
+
+typedef struct icon {
+    int x;
+    int y;
+    ALLEGRO_BITMAP* bmp;
+} icon;
+
+icon icons[N_ICONS];
+
+
+char const *action_keybind[N_ICONS] = {
+    "Q",
+    "W",
+    "E",
+    "R",
+    "ESC"
+};
+
+char const *action_desc[N_ICONS] = {
+    "Play/Pause",
+    "Train",
+    "Reset Q",
+    "Change map",
+    "Quit"
+};
 
 /**
  * Scale the coordinate to fit in the screen.
@@ -22,6 +49,7 @@
  * @return the transformed coordinate
  */
 float op_scale(float a) {
+
     return a / COORD_PIXEL_RATIO;
 }
 
@@ -33,6 +61,7 @@ float op_scale(float a) {
  * @return the transformed coordinate
  */
 float op_reverse(float a) {
+
     return VREF_POINTS * VISUAL_UNIT - a;
 }
 
@@ -45,6 +74,7 @@ float op_reverse(float a) {
  * @return reversed coordinate if it was 'y', else the original coordinate
  */
 float op_reverse_array(float a) {
+
     static bool even = true;
     even = !even;
     if (even) 
@@ -61,6 +91,7 @@ float op_reverse_array(float a) {
  * @return true if success, false otherwise
  */
 bool initialize_display(ALLEGRO_DISPLAY *display) {
+
     if(!al_init()) {
         std::cerr << "failed to initialize allegro!" << std::endl;
         return false;
@@ -80,10 +111,26 @@ bool initialize_display(ALLEGRO_DISPLAY *display) {
  * @return true if success, false otherwise
  */
 bool initialize_primitives() {
+
     if (!al_init_primitives_addon()) {
         std::cerr << "failed to initialize allegro5 primitives!" << std::endl;
         return false;
     }
+    return true;
+}
+
+
+bool initialize_fonts() {
+
+    al_init_font_addon();
+    al_init_ttf_addon();
+
+    font = al_load_ttf_font("font/roboto.ttf", 12, 0);
+    if(font == NULL) {
+        std::cerr << "failed to initialize allegro5 font!" << std::endl;
+        return false;
+    }
+
     return true;
 }
 
@@ -251,13 +298,67 @@ void draw_car(const Map& map, const Vehicle& car) {
 
 
 /**
+* Initialize the icons
+*/
+void init_icons() {
+
+    int left_padding = (DISP_WIDTH - (2 * N_ICONS - 1) * ICON_SIZE) / 2;
+
+    for (int i = 0; i < N_ICONS; i++) {
+        icons[i].x = left_padding + 2 * i * ICON_SIZE - ICON_SIZE / 2;
+        icons[i].y = FIELD_VIS_H + TOOLBAR_H / 2 - ICON_SIZE / 2;
+        //icons[i].bmp = load_bitmap(icon_bmp_paths[i], NULL);
+    }
+}
+
+
+/**
  * Initialize the Allegro graphics.
  * 
  * @param display the pointer to Allegro display
  * @return true if success, false otherwise
  */
 bool start_graphics(ALLEGRO_DISPLAY *display) {
-	return initialize_display(display) && initialize_primitives();
+
+    bool ret = initialize_display(display) && initialize_primitives() && initialize_fonts();
+    init_icons();
+    return ret;
+}
+
+
+/**
+* Draw the toolbar
+*/
+void draw_toolbar() {
+
+    // Draw background and border
+    al_draw_filled_rectangle(0, FIELD_VIS_H, DISP_WIDTH - 1, DISP_HEIGHT - 1, COLOR_RED);
+    al_draw_filled_rectangle(2, FIELD_VIS_H + 2, DISP_WIDTH - 2, DISP_HEIGHT - 3, COLOR_GREEN);
+
+    // Display toolbar elements
+    for (int i = 0; i < N_ICONS; i++) {
+
+        // Draw icon
+        al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_RED, 1);
+
+        //draw_sprite(surface, icons[i].bmp, icons[i].x, icons[i].y);
+
+        // Draw keybind
+        al_draw_text(font, COLOR_RED, icons[i].x + ICON_SIZE / 2, icons[i].y - 18, ALLEGRO_ALIGN_CENTER, action_keybind[i]);
+        //textout_centre_ex(surface, font, action_keybind[i], icons[i].x + ICON_SIZE / 2, icons[i].y - 12, COLOR_TEXT, COLOR_TOOLBAR);
+
+        // Draw description
+        al_draw_text(font, COLOR_RED, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, ALLEGRO_ALIGN_CENTER, action_desc[i]);
+        //textout_centre_ex(surface, font, action_desc[i], icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, COLOR_TEXT, COLOR_TOOLBAR);
+    }
+}
+
+
+/**
+* Draw the status panel
+*/
+void draw_status_panel() {
+
 }
 
 
@@ -271,6 +372,12 @@ void display_all_entities(const Map& map, const Vehicle& car) {
     
     // Draw the field
     draw_map(map);
+
+    // Draw the toolbar
+    draw_toolbar();
+
+    // Draw the status panel
+    draw_status_panel();
 
     // Draw the car
     draw_car(map, car);

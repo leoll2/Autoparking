@@ -2,7 +2,9 @@
 #define DISPLAY_H
 
 #include <iostream>
-#include <allegro5/allegro.h>	// do not remove! (obscure compatibility reasons)
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
 #include "map.h"
 #include "Q_learning_network.h"

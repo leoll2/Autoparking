@@ -1,4 +1,4 @@
-#include <allegro5/allegro.h>	//never remove! (obscure compatibility reasons)
+#include <allegro5/allegro.h>
 #include <chrono>
 #include <csignal>
 #include <ctime>
@@ -7,6 +7,7 @@
 #include <thread>
 #include "display.h"
 #include "field_params.h"
+#include "keyboard.h"
 #include "maps.h"
 #include "Q_learning_network.h"
 #include "shapes.h"
@@ -45,15 +46,23 @@ int main(int argc, char **argv) {
     /* Initialize the graphics */
     if(!start_graphics(display))
         return -1;
+
+    /* Initialize the keyboard */
+    if(!start_keyboard())
+        return -1;
     
     /* Halt the simulation at the end of the current episode in case of SIGINT */
     signal(SIGINT, halt_simulation);
     
     /* Keep simulating episodes of autoparking */
     while(!stopflag) {
+        poll_command();
         ai.simulate_episode();
     }
     
+    /* Release the keyboard */
+    stop_keyboard();
+
     /* Close the graphics */
     end_graphics(display);
 
