@@ -71,17 +71,25 @@ ccmake -DCMAKE_INSTALL_PREFIX=/usr ..
 Inside the cmake environment, press 'C' (configure) and 'E' if it complains about few missing libraries (don't worry, it still works). Then press 'G' (generate).
 
 Here comes the fun, compilation:
-```make```
+```
+make
+```
 You can optionally add the -j option to parallelize (speed up) the compilation on multiple cores.  
 Finally, install:
-```make install```
+```
+make install
+```
 
 If all the previous steps went fine, Allegro5 is properly installed and setup.  
 All you need now is to compile the Autoparking application, which is very easy. Switch back to the Autoparking directory, and run:
-```make```
+```
+make
+```
 
 To run the simulation, type:
-```bin/main```
+```
+bin/main
+```
 
 ## Disclaimer
 
