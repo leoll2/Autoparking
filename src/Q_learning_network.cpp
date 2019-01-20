@@ -83,7 +83,13 @@ void Q_LearningNetwork::initialize_R() {
  * @return the code of the action
  */
 unsigned int Q_LearningNetwork::get_best_action(int s) const {
-    return std::distance(Q[s].begin(), std::max_element(Q[s].begin(), Q[s].end()));
+
+    unsigned int a = std::distance(Q[s].begin(), std::max_element(Q[s].begin(), Q[s].end()));
+    // If there is no maximum (i.e. uninitialized Q), returns a random one
+    if (Q[s][a] == 0)
+        a = rand() % this->n_actions;
+
+    return a;
 }
 
 
