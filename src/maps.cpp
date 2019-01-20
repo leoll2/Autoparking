@@ -11,19 +11,19 @@ void SimpleParkingMap::initialize() {
 
     // Add first obstacle
     std::vector<Coordinate> ob1_coords = {	//must be counterclockwise
-            {7*SPACE_UNIT,  18*SPACE_UNIT},
-            {12*SPACE_UNIT, 18*SPACE_UNIT},
-            {12*SPACE_UNIT, 24*SPACE_UNIT},
-            {7*SPACE_UNIT,  24*SPACE_UNIT}};
+            {HREF_POINTS*7/12*SPACE_UNIT,   VREF_POINTS*3/4*SPACE_UNIT},
+            {HREF_POINTS*1*SPACE_UNIT,      VREF_POINTS*3/4*SPACE_UNIT},
+            {HREF_POINTS*1*SPACE_UNIT,      VREF_POINTS*1*SPACE_UNIT},
+            {HREF_POINTS*7/12*SPACE_UNIT,   VREF_POINTS*1*SPACE_UNIT}};
     Polygon ob1(ob1_coords);
     this->add_obstacle(ob1);
 
     // Add second obstacle
     std::vector<Coordinate> ob2_coords = {	//must be counterclockwise
-            {7*SPACE_UNIT,  0*SPACE_UNIT},
-            {12*SPACE_UNIT, 0*SPACE_UNIT},
-            {12*SPACE_UNIT, 6*SPACE_UNIT},
-            {7*SPACE_UNIT,  6*SPACE_UNIT}};
+            {HREF_POINTS*7/12*SPACE_UNIT,   VREF_POINTS*0*SPACE_UNIT},
+            {HREF_POINTS*1*SPACE_UNIT,      VREF_POINTS*0*SPACE_UNIT},
+            {HREF_POINTS*1*SPACE_UNIT,      VREF_POINTS*1/4*SPACE_UNIT},
+            {HREF_POINTS*7/12*SPACE_UNIT,   VREF_POINTS*1/4*SPACE_UNIT}};
     Polygon ob2(ob2_coords);
     this->add_obstacle(ob2);
 }
@@ -32,7 +32,7 @@ void SimpleParkingMap::initialize() {
  * A typical parallel parking map.
  */
 SimpleParkingMap::SimpleParkingMap() : 
-        Map(HREF_POINTS, VREF_POINTS, Coordinate(9*SPACE_UNIT, 8*SPACE_UNIT)) {
+        Map(HREF_POINTS, VREF_POINTS, Coordinate(HREF_POINTS*3/4*SPACE_UNIT, VREF_POINTS*1/3*SPACE_UNIT)) {
     initialize();
 }
 
@@ -48,19 +48,19 @@ void TwistedParkingMap::initialize() {
     
     /* Add the first obstacle */
     std::vector<Coordinate> ob1_coords = {	//must be counterclockwise
-            {0*SPACE_UNIT,  16*SPACE_UNIT},
-            {5*SPACE_UNIT,  16*SPACE_UNIT},
-            {5*SPACE_UNIT,  24*SPACE_UNIT},
-            {0*SPACE_UNIT,  24*SPACE_UNIT}};
+            {HREF_POINTS*0*SPACE_UNIT,      VREF_POINTS*2/3*SPACE_UNIT},
+            {HREF_POINTS*5/12*SPACE_UNIT,   VREF_POINTS*2/3*SPACE_UNIT},
+            {HREF_POINTS*5/12*SPACE_UNIT,   VREF_POINTS*1*SPACE_UNIT},
+            {HREF_POINTS*0*SPACE_UNIT,      VREF_POINTS*1*SPACE_UNIT}};
     Polygon ob1(ob1_coords);
     this->add_obstacle(ob1);
 
     // Add the second obstacle
     std::vector<Coordinate> ob2_coords = {	//must be counterclockwise
-            {7*SPACE_UNIT,  0*SPACE_UNIT},
-            {12*SPACE_UNIT, 0*SPACE_UNIT},
-            {12*SPACE_UNIT, 6*SPACE_UNIT},
-            {7*SPACE_UNIT,  6*SPACE_UNIT}};
+            {HREF_POINTS*7/12*SPACE_UNIT,   VREF_POINTS*0*SPACE_UNIT},
+            {HREF_POINTS*1*SPACE_UNIT,      VREF_POINTS*0*SPACE_UNIT},
+            {HREF_POINTS*1*SPACE_UNIT,      VREF_POINTS*1/4*SPACE_UNIT},
+            {HREF_POINTS*7/12*SPACE_UNIT,   VREF_POINTS*1/4*SPACE_UNIT}};
     Polygon ob2(ob2_coords);
     this->add_obstacle(ob2);
 }
@@ -70,6 +70,6 @@ void TwistedParkingMap::initialize() {
  * A zig-zag parking map.
  */
 TwistedParkingMap::TwistedParkingMap() : 
-        Map(HREF_POINTS, VREF_POINTS, Coordinate(8*SPACE_UNIT, 14*SPACE_UNIT)) {
+        Map(HREF_POINTS, VREF_POINTS, Coordinate(HREF_POINTS*2/3*SPACE_UNIT, VREF_POINTS*7/12*SPACE_UNIT)) {
     initialize();
 }
