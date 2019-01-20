@@ -7,12 +7,19 @@
 #include "field_params.h"
 #include "maneuver.h"
 
+#define COLOR_WHITE     al_map_rgb(255,255,255)
+#define COLOR_BLACK     al_map_rgb(0,0,0)
 #define COLOR_LIME      al_map_rgb(200,255,140)
 #define COLOR_AMARANTH  al_map_rgb(100,0,0)
+#define COLOR_REDBRICK  al_map_rgb(100,30,20)
 #define COLOR_GREY      al_map_rgb(96,96,96)
+#define COLOR_GREYBLUE  al_map_rgb(52,73,94)
 #define COLOR_SKYBLUE   al_map_rgb(135,206,235)
+#define COLOR_SEABLUE   al_map_rgb(37,116,169)
 #define COLOR_RED       al_map_rgb(255,0,0)
+#define COLOR_ORANGE    al_map_rgb(211,84,0)
 #define COLOR_GREEN     al_map_rgb(0,102,0)
+#define COLOR_PONDGREEN al_map_rgb(20,100,50)
 
 
 ALLEGRO_FONT *font = NULL;
@@ -27,18 +34,22 @@ icon icons[N_ICONS];
 
 
 char const *action_keybind[N_ICONS] = {
-    "Q",
-    "W",
-    "E",
+    "P",
+    "T",
     "R",
-    "ESC"
+    "S",
+    "L",
+    "M",
+    "Q",
 };
 
 char const *action_desc[N_ICONS] = {
-    "Play/Pause",
+    "Pause",
     "Train",
     "Reset Q",
-    "Change map",
+    "Save Q",
+    "Load Q",
+    "Map",
     "Quit"
 };
 
@@ -188,7 +199,7 @@ void draw_map(const Map& map) {
     
     // Draw the obstacles
     for (auto ob : map.obstacles)
-        draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_AMARANTH);
+        draw_polygon(ob.get_n_sides(), ob.get_vertices2(), COLOR_REDBRICK);
 }
 
 
@@ -243,9 +254,9 @@ void draw_car(const Map& map, const Vehicle& car) {
     
     // Draw the body of the car: red if in a bad position, green otherwise 
     if (car.verify_collision(map) || !map.is_within_boundaries(car.to_polygon()))
-        draw_polygon(4, car.get_vertices2(), COLOR_RED);
+        draw_polygon(4, car.get_vertices2(), COLOR_ORANGE);
     else
-        draw_polygon(4, car.get_vertices2(), COLOR_GREEN);
+        draw_polygon(4, car.get_vertices2(), COLOR_PONDGREEN);
     
     // Compute some useful reference points
     std::vector<Coordinate> car_vertices = car.get_vertices1();
@@ -307,7 +318,6 @@ void init_icons() {
     for (int i = 0; i < N_ICONS; i++) {
         icons[i].x = left_padding + 2 * i * ICON_SIZE - ICON_SIZE / 2;
         icons[i].y = FIELD_VIS_H + TOOLBAR_H / 2 - ICON_SIZE / 2;
-        //icons[i].bmp = load_bitmap(icon_bmp_paths[i], NULL);
     }
 }
 
@@ -332,24 +342,20 @@ bool start_graphics(ALLEGRO_DISPLAY *display) {
 void draw_toolbar() {
 
     // Draw background and border
-    al_draw_filled_rectangle(0, FIELD_VIS_H, DISP_WIDTH - 1, DISP_HEIGHT - 1, COLOR_RED);
-    al_draw_filled_rectangle(2, FIELD_VIS_H + 2, DISP_WIDTH - 2, DISP_HEIGHT - 3, COLOR_GREEN);
+    al_draw_filled_rectangle(0, FIELD_VIS_H, DISP_WIDTH - 1, DISP_HEIGHT - 1, COLOR_TOOLBAR_BORDER);
+    al_draw_filled_rectangle(2, FIELD_VIS_H + 2, DISP_WIDTH - 2, DISP_HEIGHT - 3, COLOR_TOOLBAR);
 
     // Display toolbar elements
     for (int i = 0; i < N_ICONS; i++) {
 
         // Draw icon
-        al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_RED, 1);
-
-        //draw_sprite(surface, icons[i].bmp, icons[i].x, icons[i].y);
+        al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_ICON_BORDER, 1);
 
         // Draw keybind
-        al_draw_text(font, COLOR_RED, icons[i].x + ICON_SIZE / 2, icons[i].y - 18, ALLEGRO_ALIGN_CENTER, action_keybind[i]);
-        //textout_centre_ex(surface, font, action_keybind[i], icons[i].x + ICON_SIZE / 2, icons[i].y - 12, COLOR_TEXT, COLOR_TOOLBAR);
+        al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE / 4, ALLEGRO_ALIGN_CENTER, action_keybind[i]);
 
         // Draw description
-        al_draw_text(font, COLOR_RED, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, ALLEGRO_ALIGN_CENTER, action_desc[i]);
-        //textout_centre_ex(surface, font, action_desc[i], icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, COLOR_TEXT, COLOR_TOOLBAR);
+        al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, ALLEGRO_ALIGN_CENTER, action_desc[i]);
     }
 }
 
@@ -357,8 +363,25 @@ void draw_toolbar() {
 /**
 * Draw the status panel
 */
-void draw_status_panel() {
+void draw_status_panel(const Q_LearningNetwork& ai) {
 
+    int x0 = FIELD_VIS_W;
+    int y0 = 0;
+
+    // Draw background and border
+    al_draw_filled_rectangle(x0, 0, DISP_WIDTH - 1, FIELD_VIS_H, COLOR_STATUS_BORDER);
+    al_draw_filled_rectangle(x0 + 2, 2, DISP_WIDTH - 3, FIELD_VIS_H - 1, COLOR_STATUS_PANEL);
+
+    al_draw_text(font, COLOR_TEXT, x0 + (DISP_WIDTH - FIELD_VIS_W) / 2, y0 + 10, ALLEGRO_ALIGN_CENTER, "STATUS");
+
+    // Print status
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 40, 0, "%-24s %d", "Iterations:", ai.get_iter_trained());
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 60, 0, "%-24s %.2f", "Iter factor:", (double)ai.get_iter_trained() / (ai.get_n_states() * ai.get_n_actions()));
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 80, 0, "%-24s %.4f", "Learning rate:", ALPHA);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 100, 0, "%-24s %.4f", "Discount factor:", GAMMA);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 120, 0, "%-24s %.4f", "Explor factor:", EPSILON);
+
+    al_draw_text(font, COLOR_TEXT, x0 + STATUS_W / 2, y0 + FIELD_VIS_H - 25, ALLEGRO_ALIGN_CENTER, "github.com/leoll2/Autoparking");
 }
 
 
@@ -366,9 +389,10 @@ void draw_status_panel() {
  * Show all the entities within the field.
  * 
  * @param map the map
+ * @param ai the neural network
  * @param car the car within the map
  */
-void display_all_entities(const Map& map, const Vehicle& car) {
+void display_all_entities(const Map& map, const Q_LearningNetwork& ai, const Vehicle& car) {
     
     // Draw the field
     draw_map(map);
@@ -377,7 +401,7 @@ void display_all_entities(const Map& map, const Vehicle& car) {
     draw_toolbar();
 
     // Draw the status panel
-    draw_status_panel();
+    draw_status_panel(ai);
 
     // Draw the car
     draw_car(map, car);
@@ -393,15 +417,16 @@ void display_all_entities(const Map& map, const Vehicle& car) {
  * is generated using an (approximated) interpolation of position and orientation.
  * 
  * @param map the map
+ * @param ai the neural network
  * @param car_start the initial position of the car
  * @param car_end the end position of the car
  * @param frames the number of frames in the animation
  * @param millis the delay between two frames in the animation
  */
-void display_all_entities_enhanced(const Map& map, const Vehicle& car_start, 
-                                   const Vehicle& car_end, unsigned int frames,
-                                   unsigned int millis) {
-    
+void display_all_entities_enhanced(const Map& map, const Q_LearningNetwork& ai,
+                                   const Vehicle& car_start, const Vehicle& car_end, 
+                                   unsigned int frames, unsigned int millis) 
+{   
     Coordinate start_pos = car_start.get_rear_center();
     Coordinate final_pos = car_end.get_rear_center();
     double start_angle = car_start.get_orientation();
@@ -416,7 +441,7 @@ void display_all_entities_enhanced(const Map& map, const Vehicle& car_start,
             Coordinate new_pos = start_pos + (d_vector * (f/(double)frames));
             Vehicle dummy(car_start.get_length(), car_start.get_width(), new_pos, 
                     start_angle, false);
-            display_all_entities(map, dummy);
+            display_all_entities(map, ai, dummy);
             std::this_thread::sleep_for(std::chrono::milliseconds(millis));
         }
     } else {            // if the vehicle is steering
@@ -430,7 +455,7 @@ void display_all_entities_enhanced(const Map& map, const Vehicle& car_start,
             Coordinate new_pos = start_pos.rotate(rot_center, f * rot_angle_unit);
             Vehicle dummy(car_start.get_length(), car_start.get_width(), new_pos, 
                     start_angle + f * rot_angle_unit, false);
-            display_all_entities(map, dummy);
+            display_all_entities(map, ai, dummy);
             std::this_thread::sleep_for(std::chrono::milliseconds(millis));
         }
     }

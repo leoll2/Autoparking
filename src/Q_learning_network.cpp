@@ -3,7 +3,6 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
-#include <set>
 #include <thread>
 #include "display.h"
 #include "field_params.h"
@@ -83,7 +82,7 @@ void Q_LearningNetwork::initialize_R() {
  * @param s the given state
  * @return the code of the action
  */
-unsigned int Q_LearningNetwork::get_best_action(int s) {
+unsigned int Q_LearningNetwork::get_best_action(int s) const {
     return std::distance(Q[s].begin(), std::max_element(Q[s].begin(), Q[s].end()));
 }
 
@@ -94,7 +93,7 @@ unsigned int Q_LearningNetwork::get_best_action(int s) {
  * @param s the given state
  * @return the code of the action
  */
-unsigned int Q_LearningNetwork::get_eps_greedy_action(int s) {
+unsigned int Q_LearningNetwork::get_eps_greedy_action(int s) const {
     
     // Generate random number between 0 and 1
     double r = (double) rand() / (RAND_MAX);
@@ -114,7 +113,7 @@ unsigned int Q_LearningNetwork::get_eps_greedy_action(int s) {
  * @param s the given state
  * @return the value of Q for that state-action pair
  */
-float Q_LearningNetwork::get_max_state_quality(int s) {
+float Q_LearningNetwork::get_max_state_quality(int s) const {
     return *std::max_element(Q[s].begin(), Q[s].end());
 }
 
@@ -124,7 +123,7 @@ float Q_LearningNetwork::get_max_state_quality(int s) {
  * 
  * @param iterations the max number of training iterations to be performed
  */
-void Q_LearningNetwork::train(unsigned int iterations) {
+void Q_LearningNetwork::train(unsigned int iterations, bool force) {
     
     std::ofstream log;
     unsigned int iter = 0;
@@ -140,10 +139,11 @@ void Q_LearningNetwork::train(unsigned int iterations) {
         
         // Log, display and update info
         if (LOG_CONV_METRIC && (iter % LOG_ITER_INTERVAL == 0)) {
-            this->add_to_conv_log(log, iter, avg_delta);
-            std::cout << "Iterations: " << iter << " \tdelta: " << avg_delta << std::endl;
+            this->add_to_conv_log(log, iter_trained, avg_delta);
+            //std::cout << "Iterations: " << iter << " \tdelta: " << avg_delta << std::endl;    //TODO: stampare a schermo, avg_delta deve diventare attributo
         }
         ++iter;
+        ++iter_trained;
         
         // Spawn the vehicle in a random position
         Vehicle dummy = Vehicle::random_vehicle();
@@ -176,21 +176,18 @@ void Q_LearningNetwork::train(unsigned int iterations) {
                 avg_delta = (1-CONV_ZETA) * avg_delta + CONV_ZETA * std::abs(Q[s1][a] - old_Q_value);
             }
         } while (ret == 0);
-    } while ((iter < iterations || !STOP_MAX_ITER) && (avg_delta > CONV_THRESHOLD || !STOP_CONVERGENCE));
+    } while ((iter < iterations || !STOP_MAX_ITER) && (force || avg_delta > CONV_THRESHOLD || !STOP_CONVERGENCE));
     
     // Tell the user which stop criterion was triggered, and number of iterations
-    if (iter >= iterations)
+    /*if (iter >= iterations)
         std::cout << "Training stopped after reaching the maximum limit of iterations." << std::endl;
     else
         std::cout << "Training stopped due to convergence." << std::endl;
-    std::cout << "Performed iterations: " << iter << std::endl;
-    
+    std::cout << "Performed iterations: " << iter << std::endl;*/
+
     // Close the log
     if (LOG_CONV_METRIC)
         this->close_conv_log(log);
-    
-    // Store the trained Q matrix in the cache
-    store_into_cache();
 }
 
 
@@ -222,7 +219,7 @@ bool Q_LearningNetwork::restore_from_cache() {
     if (r.is_open() && q.is_open()) {
         unsigned int s_r, a_r, s_q, a_q;
         r >> s_r >> a_r;
-        q >> s_q >> a_q;
+        q >> s_q >> a_q >> iter_trained;
         if (s_r != n_states || a_r != n_actions || s_q != n_states || a_q != n_actions) {
             std::cerr << "Loading from cache failed: dimension mismatch." << std::endl;
             return false;
@@ -274,7 +271,7 @@ bool Q_LearningNetwork::store_into_cache() {
     
     if (r.is_open() && q.is_open()) {
         r << n_states << " " << n_actions << "\n";
-        q << n_states << " " << n_actions << "\n";
+        q << n_states << " " << n_actions << " " << iter_trained << "\n";
         for (unsigned int s = 0; s < n_states; ++s) {
             for (unsigned int a = 0; a < n_actions; ++a) {
                 r << this->R[s][a] << " ";
@@ -336,7 +333,7 @@ void Q_LearningNetwork::add_to_conv_log(std::ofstream& log, unsigned int iter, f
 
 
 /**
- * A Q-learning neural network for autoparking.
+ * Constructor for a Q-learning neural network for autonomous pparking.
  * 
  * @param m the map used for simulations
  */
@@ -346,6 +343,7 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     Q(n_states, std::vector<float>(n_actions, 0)),
     R(n_states, std::vector<float>(n_actions, 0)),
     map(m),
+    iter_trained(0),
     target_state(Vehicle::encode_vehicle(pi/2, map.target.x, map.target.y))
 {
     // Print initialization information
@@ -371,11 +369,15 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     std::cout << "Matrix R ready" << std::endl;
     
     // Initialize quality matrix Q
-    if (!initialize_Q()) {
+    if (initialize_Q())
+        std::cout << "Q initialized with cached values" << std::endl;
+    else
+        std::cout << "Q left uninitialized (cache not found)" << std::endl;
+    /*if (!initialize_Q()) {
         unsigned int n_iterations = static_cast<unsigned int>(MAX_ITER_FACTOR * n_states * n_actions);
         train(n_iterations);
-    }
-    std::cout << "Matrix Q ready" << std::endl;
+    }*/
+    //std::cout << "Matrix Q ready" << std::endl;
 }
 
 
@@ -434,52 +436,28 @@ double Q_LearningNetwork::get_reward(unsigned int s, unsigned int a) const {
 
 
 /**
- * Simulate and show one episode of autoparking.
- */
-void Q_LearningNetwork::simulate_episode() {
-	unsigned int n_moves = 0;
+* Get the code associated to the target state.
+*/
+unsigned int Q_LearningNetwork::get_target_state() const {
+    return target_state;
+}
 
-    // Spawn the vehicle in a random legal position
-    Vehicle car = Vehicle::random_vehicle();
-    while (!map.is_within_boundaries(car.to_polygon()) || 
-            map.collides_with_obstacles(car.to_polygon()))
-        car = Vehicle::random_vehicle();
-    
-    // Show it
-    display_all_entities(map, car); 
-    
-    unsigned int ret_move;                  // return value of car.move()
-    std::set<unsigned int> visited;         // keep track of visited states to abort loops
-    std::pair<std::set<unsigned int>::iterator,bool> ret_visit;  // return value of visited.insert()
-    unsigned int state = car.encode();
-    
-    // Keep performing maneuvers
-    do {
-        // Mark the current state as visited
-        ret_visit = visited.insert(state);
-        
-        // Check whether the state had already been visited
-        if (ret_visit.second == false)
-            return;
-        
-        // Clone the vehicle in the current position
-        Vehicle ghost(car);
-        
-        // Choose the (hopefully) best maneuver
-        Maneuver mnv(get_best_action(state));
-        
-        // Move the vehicle accordingly
-        ret_move = car.move(map, mnv);
-        ++n_moves;
-        
-        // Show the new position
-        display_all_entities_enhanced(map, ghost, car, 10, 50);
-        
-        // If the vehicle reached the final state, wait a bit then return
-        if ((ret_move == 0) && ((state = car.encode()) == target_state)) {
-            //std::cout << n_moves << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
-            return;
-        }
-    } while (ret_move == 0);
+
+/**
+* Get the number of training iterations performed.
+*/
+unsigned int Q_LearningNetwork::get_iter_trained() const {
+    return iter_trained;
+}
+
+
+/**
+* Reset the Q matrix to zero values.
+*/
+void Q_LearningNetwork::reset_Q() {
+
+    for (auto &s : Q)
+        std::fill(s.begin(), s.end(), 0.0);
+
+    iter_trained = 0;
 }

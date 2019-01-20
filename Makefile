@@ -12,7 +12,7 @@ CONF_FILES = $(CONF)/AI_params.h $(CONF)/display_params.h $(CONF)/field_params.h
 
 .PHONY: all clean
 
-all: $(BIN)/main $(BIN)/test_maneuver $(BIN)/test_shapes $(BIN)/test_collision $(BIN)/test_movements
+all: $(BIN)/main #$(BIN)/test_maneuver $(BIN)/test_shapes $(BIN)/test_movements $(BIN)/test_collision
 
 
 # Object files

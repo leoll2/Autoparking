@@ -16,8 +16,18 @@
 #define DISP_WIDTH  		FIELD_VIS_W	+ STATUS_W  	// [pixels] width of the screen
 #define DISP_HEIGHT 		FIELD_VIS_H + TOOLBAR_H		// [pixels] height of the screen
 
-#define N_ICONS     		5
+#define N_ICONS     		7
 #define ICON_SIZE   		30	
+
+
+#define COLOR_TOOLBAR_BORDER 	COLOR_BLACK
+#define COLOR_TOOLBAR       	COLOR_GREYBLUE
+#define COLOR_ICON_BORDER   	COLOR_BLACK
+#define COLOR_STATUS_BORDER  	COLOR_BLACK
+#define COLOR_STATUS_PANEL  	COLOR_GREYBLUE
+#define COLOR_TEXT          	COLOR_WHITE
+
+
 
 #endif	// DISPLAY_PARAMS_H
 

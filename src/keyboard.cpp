@@ -2,6 +2,13 @@
 
 #include "keyboard.h"
 
+std::atomic<bool> should_stop = ATOMIC_VAR_INIT(false);
+std::atomic<bool> should_reset = ATOMIC_VAR_INIT(false);
+std::atomic<bool> should_train = ATOMIC_VAR_INIT(false);
+std::atomic<bool> should_store_cache = ATOMIC_VAR_INIT(false);
+std::atomic<bool> should_load_cache = ATOMIC_VAR_INIT(false);
+std::atomic<bool> paused = ATOMIC_VAR_INIT(false);
+
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 
 bool start_keyboard() {
@@ -24,30 +31,36 @@ void stop_keyboard() {
 }
 
 
-void poll_command() {
+void poll_commands() {
 
 	ALLEGRO_EVENT ev;
 
 	while (al_get_next_event(event_queue, &ev)) {
 		if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
 			switch(ev.keyboard.keycode) {
-	            case ALLEGRO_KEY_Q:
-	               std::cout << "Q key pressed" << std::endl;
-	               break;
-	            case ALLEGRO_KEY_W:
-	               std::cout << "W key pressed" << std::endl;
-	               break;
-	            case ALLEGRO_KEY_E:
-	               std::cout << "E key pressed" << std::endl;
-	               break;
-	            case ALLEGRO_KEY_R:
-	               std::cout << "R key pressed" << std::endl;
-	               break;
-	            case ALLEGRO_KEY_ESCAPE:
-	               std::cout << "ESC key pressed" << std::endl;
-	               break;
-	            default:
-	            	break;
+				case ALLEGRO_KEY_P:
+					paused = !paused;
+					break;
+				case ALLEGRO_KEY_M:
+				    // CHANGE MAP
+					break;
+				case ALLEGRO_KEY_Q:
+					should_stop = true;
+					break;
+				case ALLEGRO_KEY_R:
+					should_reset = true;
+					break;
+				case ALLEGRO_KEY_T:
+					should_train = !should_train;
+					break;
+				case ALLEGRO_KEY_S:
+					should_store_cache = true;
+					break;
+				case ALLEGRO_KEY_L:
+					should_load_cache = true;
+					break;
+				default:
+					break;
 	         }
 		}
 	}
