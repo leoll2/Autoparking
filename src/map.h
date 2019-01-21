@@ -10,6 +10,7 @@
 /******************************************************************************/
 
 class Map {
+
     public:
         const unsigned int width, height;
         std::vector<Polygon> obstacles;
@@ -25,6 +26,10 @@ class Map {
         bool collides_with_obstacles(const Polygon& p) const;
         /* Returns true if the arc collides with an obstacle. */
         bool collides_with_obstacles(const Arc& a) const;
+        /* Returns the identifier of this kind of map*/
+        virtual unsigned int get_id() = 0;
+    
+    protected:
         /* Constructor */
         Map(unsigned int w, unsigned int h, Coordinate t);
 };

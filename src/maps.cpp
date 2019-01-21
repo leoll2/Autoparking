@@ -37,6 +37,11 @@ SimpleParkingMap::SimpleParkingMap() :
 }
 
 
+unsigned int SimpleParkingMap::get_id() {
+    return 0;
+}
+
+
 /******************************************************************************/
 /*             TWISTED PARKING MAP: a zig-zag parking scenario                */
 /******************************************************************************/
@@ -72,4 +77,9 @@ void TwistedParkingMap::initialize() {
 TwistedParkingMap::TwistedParkingMap() : 
         Map(HREF_POINTS, VREF_POINTS, Coordinate(HREF_POINTS*2/3*SPACE_UNIT, VREF_POINTS*7/12*SPACE_UNIT)) {
     initialize();
+}
+
+
+unsigned int TwistedParkingMap::get_id() {
+    return 1;
 }

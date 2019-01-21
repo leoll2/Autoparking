@@ -15,16 +15,27 @@
 /*     Q-LEARNING NETWORK: reinforcement learning applied to autoparking      */
 /******************************************************************************/
 
+
+/**
+* Reset the Q matrix to zero values.
+*/
+void Q_LearningNetwork::reset_Q() {
+
+    for (auto &s : Q)
+        std::fill(s.begin(), s.end(), 0.0);
+
+    iter_trained = 0;
+}
+
+
 /**
  * Initialize quality matrix Q.
  * 
  * @return true if loaded from cache, false otherwise
  */
-bool Q_LearningNetwork::initialize_Q() {
-    if (restore_from_cache())
-        return true;
-    else
-        return false;
+void Q_LearningNetwork::initialize_Q() {
+
+    reset_Q();
 }
 
 
@@ -47,13 +58,13 @@ void Q_LearningNetwork::initialize_R() {
             assert(Vehicle::encode_vehicle(car_state[0], car_state[1], car_state[2]) == s && "Encode-decode buggy");
             
             // Position the dummy vehicle here
-            dummy.reposition(map, initial_pos, initial_angle);
+            dummy.reposition(*map, initial_pos, initial_angle);
             
             // Retrieve the maneuver object corresponding to this action code
             Maneuver mvn(a);
             
             // Compute the next state
-            unsigned int ret = dummy.move(map, mvn);
+            unsigned int ret = dummy.move(*map, mvn);
             
             // Compute the reward function for the current state on the basis of the next one
             switch(ret) {
@@ -167,7 +178,7 @@ void Q_LearningNetwork::train(unsigned int iterations, bool force) {
             Maneuver mnv(a);
             
             // Move the vehicle
-            ret = dummy.move(map, mnv);
+            ret = dummy.move(*map, mnv);
             
             // Update Q and estimate the convergence
             float old_Q_value = Q[s1][a];
@@ -204,19 +215,16 @@ void Q_LearningNetwork::train(unsigned int iterations, bool force) {
  */
 bool Q_LearningNetwork::restore_from_cache() {
     
-    /*std::ifstream r("cache/R");
-    std::ifstream q("cache/Q");*/
-    
     std::ifstream r, q;
     
-    switch (CHOSEN_MAP) {
+    switch (map->get_id()) {
+        case 0:
+            r.open("cache/R_0", std::ifstream::in);
+            q.open("cache/Q_0", std::ifstream::in);
+            break;
         case 1:
             r.open("cache/R_1", std::ifstream::in);
             q.open("cache/Q_1", std::ifstream::in);
-            break;
-        case 2:
-            r.open("cache/R_2", std::ifstream::in);
-            q.open("cache/Q_2", std::ifstream::in);
             break;
         default:
             return false;
@@ -258,18 +266,16 @@ bool Q_LearningNetwork::restore_from_cache() {
  */
 bool Q_LearningNetwork::store_into_cache() {
     
-    /*std::ofstream r("cache/R");
-    std::ofstream q("cache/Q");*/
     std::ofstream r, q;
     
-    switch (CHOSEN_MAP) {
+    switch (map->get_id()) {
+        case 0:
+            r.open("cache/R_0", std::ofstream::out);
+            q.open("cache/Q_0", std::ofstream::out);
+            break;
         case 1:
             r.open("cache/R_1", std::ofstream::out);
             q.open("cache/Q_1", std::ofstream::out);
-            break;
-        case 2:
-            r.open("cache/R_2", std::ofstream::out);
-            q.open("cache/Q_2", std::ofstream::out);
             break;
         default:
             return false;
@@ -339,7 +345,33 @@ void Q_LearningNetwork::add_to_conv_log(std::ofstream& log, unsigned int iter, f
 
 
 /**
- * Constructor for a Q-learning neural network for autonomous pparking.
+* Set the current map to the specified one.
+*/
+void Q_LearningNetwork::set_map(Map& m) {
+
+    map = &m;
+    target_state = Vehicle::encode_vehicle(pi/2, map->target.x, map->target.y);
+
+    // Initialize rewards matrices R and Q
+    std::cout << "Loading cache..." << std::endl;
+    if (restore_from_cache()) {
+        std::cout << "Q and R successfully loaded from cache." << std::endl;
+    } else {
+        std::cout << "Failed to load Q and R from cache (not found)" << std::endl;
+
+        std::cout << "Preparing matrix R..." << std::endl;
+        initialize_R();
+        std::cout << "Matrix R ready" << std::endl;
+
+        std::cout << "Resetting matrix Q..." << std::endl;
+        initialize_Q();
+        std::cout << "Matrix Q reset" << std::endl;
+    }
+}
+
+
+/**
+ * Constructor for a Q-learning neural network for autonomous parking.
  * 
  * @param m the map used for simulations
  */
@@ -348,9 +380,9 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
     n_actions(30),
     Q(n_states, std::vector<float>(n_actions, 0)),
     R(n_states, std::vector<float>(n_actions, 0)),
-    map(m),
+    map(nullptr),
     iter_trained(0),
-    target_state(Vehicle::encode_vehicle(pi/2, map.target.x, map.target.y))
+    target_state(0)
 {
     // Print initialization information
     std::cout << "Initializing AI..." << std::endl
@@ -370,20 +402,8 @@ Q_LearningNetwork::Q_LearningNetwork(Map& m) :
             << "Convergence threshold: " << (STOP_CONVERGENCE ? 
                     std::to_string(CONV_THRESHOLD) : "-") << std::endl; 
     
-    // Initialize rewards matrix R
-    initialize_R();
-    std::cout << "Matrix R ready" << std::endl;
     
-    // Initialize quality matrix Q
-    if (initialize_Q())
-        std::cout << "Q initialized with cached values" << std::endl;
-    else
-        std::cout << "Q left uninitialized (cache not found)" << std::endl;
-    /*if (!initialize_Q()) {
-        unsigned int n_iterations = static_cast<unsigned int>(MAX_ITER_FACTOR * n_states * n_actions);
-        train(n_iterations);
-    }*/
-    //std::cout << "Matrix Q ready" << std::endl;
+    set_map(m);
 }
 
 
@@ -410,9 +430,9 @@ unsigned int Q_LearningNetwork::get_n_actions() const {
 /**
  * Get the map used for simulation.
  * 
- * @return reference to map object
+ * @return pointer to map object
  */
-Map& Q_LearningNetwork::get_map() const {
+Map *Q_LearningNetwork::get_map() const {
     return map;
 }
 
@@ -454,16 +474,4 @@ unsigned int Q_LearningNetwork::get_target_state() const {
 */
 unsigned int Q_LearningNetwork::get_iter_trained() const {
     return iter_trained;
-}
-
-
-/**
-* Reset the Q matrix to zero values.
-*/
-void Q_LearningNetwork::reset_Q() {
-
-    for (auto &s : Q)
-        std::fill(s.begin(), s.end(), 0.0);
-
-    iter_trained = 0;
 }

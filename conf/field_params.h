@@ -3,7 +3,7 @@
 #ifndef FIELD_PARAMS_H
 #define FIELD_PARAMS_H
 
-#define CHOSEN_MAP   	1	// ID of the chosen map
+//#define CHOSEN_MAP   	1	// ID of the chosen map
 
 #define SPACE_UNIT   	25 	// (cm) discretized field box size
 #define HREF_POINTS  	24 	// number of horizontal reference points

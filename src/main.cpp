@@ -14,12 +14,15 @@
 #include "vehicle.h"
 
 
+std::vector<std::unique_ptr<Map>> maps;
+
+
 void simulate(Q_LearningNetwork& ai) {
 
-    Map& map = ai.get_map();
+    Map *map = ai.get_map();
     // Spawn the vehicle in a random legal position
     Vehicle car = Vehicle::random_vehicle();
-    while (!map.is_within_boundaries(car.to_polygon()) || map.collides_with_obstacles(car.to_polygon()))
+    while (!map->is_within_boundaries(car.to_polygon()) || map->collides_with_obstacles(car.to_polygon()))
         car = Vehicle::random_vehicle();
 
     // Keep generating new episodes
@@ -32,6 +35,12 @@ void simulate(Q_LearningNetwork& ai) {
 
         if (should_stop)
             return;
+        if (should_change_map) {
+            current_map = (current_map + 1) % 2;
+            ai.set_map(*maps[current_map]);
+            map = ai.get_map();
+            should_change_map = false;
+        }
         if (should_reset) {
             ai.reset_Q();
             should_reset = false;
@@ -46,25 +55,25 @@ void simulate(Q_LearningNetwork& ai) {
         }
         while (should_train) {
             ai.train(ai.get_n_states() * ai.get_n_actions() / 10, true);
-            display_all_entities(map, ai, car);
+            display_all_entities(*map, ai, car);
             poll_commands();
             if (should_stop)
                 return;
         }
         
         car = Vehicle::random_vehicle();
-        while (!map.is_within_boundaries(car.to_polygon()) || map.collides_with_obstacles(car.to_polygon()))
+        while (!map->is_within_boundaries(car.to_polygon()) || map->collides_with_obstacles(car.to_polygon()))
             car = Vehicle::random_vehicle();
         state = car.encode();
 
         // Show the initial state of the episode
-        display_all_entities(map, ai, car);
+        display_all_entities(*map, ai, car);
 
         // Keep performing maneuvers
         do {
             // Handle possible quit, reset or pause request
             poll_commands();
-            if (should_stop || should_reset || should_train)
+            if (should_stop || should_reset || should_train || should_change_map)
                 break;
             if (should_store_cache) {
                 ai.store_into_cache();
@@ -95,11 +104,11 @@ void simulate(Q_LearningNetwork& ai) {
             Maneuver mnv(ai.get_best_action(state));
             
             // Move the vehicle accordingly
-            ret_move = car.move(map, mnv);
+            ret_move = car.move(*map, mnv);
             ++n_moves;
             
             // Show the new position
-            display_all_entities_enhanced(map, ai, ghost, car, 10, 50);
+            display_all_entities_enhanced(*map, ai, ghost, car, 10, 50);
             
             // If the vehicle reached the final state, wait a bit then return
             if ((ret_move == 0) && ((state = car.encode()) == ai.get_target_state())) {
@@ -116,26 +125,19 @@ void simulate(Q_LearningNetwork& ai) {
 int main(int argc, char **argv) {
 
     ALLEGRO_DISPLAY *display = NULL;
-    std::unique_ptr<Map> map(nullptr);
     
     /* Initialize the random generator */
     srand(time(NULL));
 
     /* Create the map */
-    switch (CHOSEN_MAP) {
-        case 1:
-            map.reset(new SimpleParkingMap);
-            break;
-        case 2:
-            map.reset(new TwistedParkingMap);
-            break;
-        default:
-            std::cerr << "Non-existing map" << std::endl;
-            return -1;
-    }
+    std::unique_ptr<Map> map0(new SimpleParkingMap);
+    std::unique_ptr<Map> map1(new TwistedParkingMap);
+
+    maps.push_back(std::move(map0));
+    maps.push_back(std::move(map1));
 
     /* Initialize the Q-learning AI */
-    Q_LearningNetwork ai(*map);
+    Q_LearningNetwork ai(*maps[current_map]);
     
     /* Initialize the graphics */
     if(!start_graphics(display))

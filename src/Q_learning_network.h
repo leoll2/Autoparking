@@ -18,12 +18,12 @@ class Q_LearningNetwork {
         unsigned int n_actions;
         std::vector<std::vector<float> > Q;
         std::vector<std::vector<float> > R;
-        Map& map;
+        Map *map;
         unsigned int iter_trained;
         unsigned int target_state;
         
         float get_max_state_quality(int s) const;
-        bool initialize_Q();
+        void initialize_Q();
         void initialize_R();
         void open_conv_log(std::ofstream& log);
         void close_conv_log(std::ofstream& log);
@@ -38,8 +38,8 @@ class Q_LearningNetwork {
         /* Returns the number of actions */
         unsigned int get_n_actions() const;
         
-        /* Returns a reference to the map */
-        Map& get_map() const;
+        /* Returns a pointer to the map */
+        Map *get_map() const;
         
         /* Returns the quality value associate to the pair state-action (s,a). */
         double get_quality(unsigned int s, unsigned int a) const;
@@ -62,14 +62,17 @@ class Q_LearningNetwork {
         /* Train the neural network for the specified number of iterations. */
         void train(unsigned int n_iterations, bool force = false);
 
-        /* Reset the Q matrix */
+        /* Reset the Q matrix. */
         void reset_Q();
 
-        /* Load the Q matrix from the cache */
+        /* Load the Q matrix from the cache. */
         bool restore_from_cache();
         
-        /* Save the Q matrix in the cache */
+        /* Save the Q matrix in the cache. */
         bool store_into_cache();
+
+        /* Set the current map to the specified one. */
+        void set_map(Map& m);
 };
 
 #endif /* Q_LEARNINGNETWORK_H */

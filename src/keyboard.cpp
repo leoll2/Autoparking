@@ -7,7 +7,9 @@ std::atomic<bool> should_reset = ATOMIC_VAR_INIT(false);
 std::atomic<bool> should_train = ATOMIC_VAR_INIT(false);
 std::atomic<bool> should_store_cache = ATOMIC_VAR_INIT(false);
 std::atomic<bool> should_load_cache = ATOMIC_VAR_INIT(false);
+std::atomic<bool> should_change_map = ATOMIC_VAR_INIT(false);
 std::atomic<bool> paused = ATOMIC_VAR_INIT(false);
+std::atomic<unsigned int> current_map = ATOMIC_VAR_INIT(0);
 
 ALLEGRO_EVENT_QUEUE *event_queue = NULL;
 
@@ -42,7 +44,7 @@ void poll_commands() {
 					paused = !paused;
 					break;
 				case ALLEGRO_KEY_M:
-				    // CHANGE MAP
+				    should_change_map = true;
 					break;
 				case ALLEGRO_KEY_Q:
 					should_stop = true;

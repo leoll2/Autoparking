@@ -136,7 +136,7 @@ bool initialize_fonts() {
     al_init_font_addon();
     al_init_ttf_addon();
 
-    font = al_load_ttf_font("font/roboto.ttf", 12, 0);
+    font = al_load_ttf_font("font/opensans_semibold.ttf", 12, 0);
     if(font == NULL) {
         std::cerr << "failed to initialize allegro5 font!" << std::endl;
         return false;
@@ -349,7 +349,7 @@ void draw_toolbar() {
     for (int i = 0; i < N_ICONS; i++) {
 
         // Draw icon
-        al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_ICON_BORDER, 1);
+        al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_ICON_BORDER, 2);
 
         // Draw keybind
         al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE / 4, ALLEGRO_ALIGN_CENTER, action_keybind[i]);
@@ -508,7 +508,7 @@ std::vector<float> compute_reward_pos(float x, float y, const Maneuver& mvn) {
  */
 void display_rewards(const Q_LearningNetwork& ai) {
     
-    draw_map(ai.get_map());
+    draw_map(*ai.get_map());
     
     unsigned int n_states = ai.get_n_states();
     unsigned int n_actions  = ai.get_n_actions();

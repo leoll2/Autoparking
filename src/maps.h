@@ -12,6 +12,7 @@ class SimpleParkingMap : public Map {
         void initialize();
     public:
         SimpleParkingMap();
+        unsigned int get_id();
 };
 
 
@@ -24,6 +25,7 @@ class TwistedParkingMap : public Map {
         void initialize();
     public:
         TwistedParkingMap();
+        unsigned int get_id();
 };
 
 

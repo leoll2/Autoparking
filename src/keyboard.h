@@ -9,7 +9,10 @@ extern std::atomic<bool> should_reset;
 extern std::atomic<bool> should_train;
 extern std::atomic<bool> should_store_cache;
 extern std::atomic<bool> should_load_cache;
+extern std::atomic<bool> should_change_map;
 extern std::atomic<bool> paused;
+
+extern std::atomic<unsigned int> current_map;
 
 bool start_keyboard(); 
 
