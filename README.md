@@ -2,7 +2,7 @@
 
 The project simulates a typical car parking scenario, where a car has to make maneuvers to correctly re-position itself while avoiding near obstacles. The vehicle is 'intelligent', which means that it autonomously learns how to accomplish the task. This is done using Q-learning, a popular reinforcement learning technique.
 
-This is how the trained model looks like:
+This is what the trained model looks like:
 
 ![](img/autoparking.gif)
 
@@ -20,6 +20,7 @@ This is how the trained model looks like:
 **cache** -> contains pre-trained weights of Q and R so that you can skip the learning phase  
 **conf** -> contains the configuration files  
 **docs** -> contains a pdf file with interesting information about this project. Give it a look!  
+**font** -> contains few fonts used by the application  
 **img** -> contains the gif image above  
 **Makefile** -> just a makefile  
 **README** -> this file  
@@ -28,7 +29,7 @@ This is how the trained model looks like:
 
 ## Installation
 
-First of all, download this repository with
+First of all, download this repository with:
 ```
 git clone https://www.github.com/leoll2/Autoparking.git
 ```
@@ -41,7 +42,7 @@ First, setup your repo list
 cd /etc/apt/
 sudo gedit sources.list
 ```
-and add `contrib` and `free` at the end of those lines starting with deb or deb-src.
+and add `contrib` and `free` at the end of those lines starting with deb or deb-src. Then update:
 
 ```sudo apt-get update```
 
@@ -54,7 +55,7 @@ and "optional" ones:
 sudo apt-get install -y cmake g++ freeglut3-dev libxcursor-dev libpng-dev libjpeg-dev libfreetype6-dev libgtk2.0-dev libasound2-dev libpulse-dev libopenal-dev libflac-dev libdumb1-dev libvorbis-dev libphysfs-dev
 ```
 
-From the Autoparking directory, clone the Allegro5 git repository.
+From the Autoparking directory, clone the Allegro5 git repository:
 ```
 git clone https://github.com/liballeg/allegro5.git
 ```
@@ -86,7 +87,7 @@ All you need now is to compile the Autoparking application, which is very easy. 
 make
 ```
 
-To run the simulation, type:
+You're done! Enjoy the simulation!
 ```
 bin/main
 ```
