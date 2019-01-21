@@ -63,6 +63,7 @@ char const *action_desc[N_ICONS][2] = {
     {"Quit", "Quit"}
 };
 
+
 /**
  * Scale the coordinate to fit in the screen.
  * 
@@ -162,15 +163,19 @@ bool initialize_fonts() {
  * @param n_vertices the number of vertices
  * @param vertices the array of point coordinates, interleaved x and y
  * @param color the color used to fill the area
+ * @param fill true to fill the polygon, false to draw the border only
  */
-void draw_polygon(unsigned int n_vertices, float* vertices, ALLEGRO_COLOR color) {
+void draw_polygon(unsigned int n_vertices, float* vertices, ALLEGRO_COLOR color, bool fill = true) {
     
     // Scale the coordinates to appropriate pixel lengths
     std::transform(vertices, vertices + 2*n_vertices, vertices, op_scale);
     // Reverse the y axis to fit in this application coordinate system
     std::transform(vertices, vertices + 2*n_vertices, vertices, op_reverse_array);
 
-    al_draw_filled_polygon(vertices, n_vertices, color);
+    if (fill)
+        al_draw_filled_polygon(vertices, n_vertices, color);
+    else
+        al_draw_polygon(vertices, n_vertices, ALLEGRO_LINE_JOIN_ROUND, color, 1, 1);
     delete[] vertices;
 }
 
@@ -386,7 +391,7 @@ void draw_toolbar() {
 /**
 * Draw the status panel
 */
-void draw_status_panel(const Q_LearningNetwork& ai) {
+void draw_status_panel(const Q_LearningNetwork& ai, const Vehicle& car) {
 
     int x0 = FIELD_VIS_W;
     int y0 = 0;
@@ -398,13 +403,24 @@ void draw_status_panel(const Q_LearningNetwork& ai) {
     al_draw_text(font, COLOR_TEXT, x0 + (DISP_WIDTH - FIELD_VIS_W) / 2, y0 + 10, ALLEGRO_ALIGN_CENTER, "STATUS");
 
     // Print status
-    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 40, 0, "%-24s %d", "Iterations:", ai.get_iter_trained());
-    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 60, 0, "%-24s %.2f", "Iter factor:", (double)ai.get_iter_trained() / (ai.get_n_states() * ai.get_n_actions()));
-    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 80, 0, "%-24s %.4f", "Learning rate:", ALPHA);
-    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 100, 0, "%-24s %.4f", "Discount factor:", GAMMA);
-    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 120, 0, "%-24s %.4f", "Explor factor:", EPSILON);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 40, 0, "%s %d",    "Training iter:       ", ai.get_iter_trained());
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 60, 0, "%s %.2f",  "Training factor:   ", (double)ai.get_iter_trained() / (ai.get_n_states() * ai.get_n_actions()));
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 80, 0, "%s %.4f",  "Learning rate:     ", ALPHA);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 100, 0, "%s %.4f", "Discount factor:  ", GAMMA);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 120, 0, "%s %.4f", "Explor factor:        ", EPSILON);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 140, 0, "%s (%.0f, %.0f)", "Car pos (rear):      ", car.get_rear_center().x, car.get_rear_center().y);
+    al_draw_textf(font, COLOR_TEXT, x0 + 10, y0 + 160, 0, "%s %.4f", "Car orientation:   ", car.get_orientation());
 
     al_draw_text(font, COLOR_TEXT, x0 + STATUS_W / 2, y0 + FIELD_VIS_H - 25, ALLEGRO_ALIGN_CENTER, "github.com/leoll2/Autoparking");
+}
+
+
+void draw_target_box(const Q_LearningNetwork& ai, const Vehicle& car) {
+
+    Vehicle dummy(car.get_length(), car.get_width(), ai.get_target_state());
+    float *v = dummy.get_vertices2();
+
+    draw_polygon(4, v, COLOR_WHITE, false);
 }
 
 
@@ -420,11 +436,14 @@ void display_all_entities(const Map& map, const Q_LearningNetwork& ai, const Veh
     // Draw the field
     draw_map(map);
 
+    // Draw the target position
+    draw_target_box(ai, car);
+
     // Draw the toolbar
     draw_toolbar();
 
     // Draw the status panel
-    draw_status_panel(ai);
+    draw_status_panel(ai, car);
 
     // Draw the car
     draw_car(map, car);
