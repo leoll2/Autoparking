@@ -45,20 +45,10 @@ void simulate(Q_LearningNetwork& ai) {
             ai.reset_Q();
             should_reset = false;
         }
-        if (should_store_cache) {
-            ai.store_into_cache();
-            should_store_cache = false;
-        }
-        if (should_load_cache) {
-            ai.restore_from_cache();
-            should_load_cache = false;
-        }
         while (should_train) {
-            ai.train(ai.get_n_states() * ai.get_n_actions() / 10, true);
             display_all_entities(*map, ai, car);
+            ai.train(ai.get_n_states() * ai.get_n_actions() / 10, true);
             poll_commands();
-            if (should_stop)
-                return;
         }
         
         car = Vehicle::random_vehicle();
@@ -69,12 +59,12 @@ void simulate(Q_LearningNetwork& ai) {
         // Show the initial state of the episode
         display_all_entities(*map, ai, car);
 
-        // Keep performing maneuvers
+        // Keep performing maneuvers until episode end
         do {
             // Handle possible quit, reset or pause request
             poll_commands();
             if (should_stop || should_reset || should_train || should_change_map)
-                break;
+                break;      // these actions abort the episode
             if (should_store_cache) {
                 ai.store_into_cache();
                 should_store_cache = false;
@@ -85,9 +75,8 @@ void simulate(Q_LearningNetwork& ai) {
             }
             while(paused) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                display_all_entities(*map, ai, car);
                 poll_commands();
-                if (should_stop)
-                    break;
             }
 
             // Mark the current state as visited

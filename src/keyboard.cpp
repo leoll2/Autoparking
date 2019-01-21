@@ -33,37 +33,59 @@ void stop_keyboard() {
 }
 
 
+void flush_other_commands() {
+
+	ALLEGRO_EVENT ev;
+	while (al_get_next_event(event_queue, &ev));
+}
+
+
 void poll_commands() {
 
 	ALLEGRO_EVENT ev;
 
 	while (al_get_next_event(event_queue, &ev)) {
-		if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
-			switch(ev.keyboard.keycode) {
-				case ALLEGRO_KEY_P:
-					paused = !paused;
-					break;
-				case ALLEGRO_KEY_M:
-				    should_change_map = true;
-					break;
-				case ALLEGRO_KEY_Q:
-					should_stop = true;
-					break;
-				case ALLEGRO_KEY_R:
-					should_reset = true;
-					break;
-				case ALLEGRO_KEY_T:
-					should_train = !should_train;
-					break;
-				case ALLEGRO_KEY_S:
-					should_store_cache = true;
-					break;
-				case ALLEGRO_KEY_L:
-					should_load_cache = true;
-					break;
-				default:
-					break;
-	         }
-		}
+
+		if (ev.type != ALLEGRO_EVENT_KEY_DOWN)
+			continue;	// skip non-keydown events
+
+		if (paused && ev.keyboard.keycode != ALLEGRO_KEY_P)
+			continue;	// accept only resume request while paused
+
+		if (should_train && ev.keyboard.keycode != ALLEGRO_KEY_T)
+			continue;	// accept only resume request while paused
+
+		switch(ev.keyboard.keycode) {
+			case ALLEGRO_KEY_P:
+				paused = !paused;
+				flush_other_commands();
+				break;
+			case ALLEGRO_KEY_M:
+			    should_change_map = true;
+			    flush_other_commands();
+				break;
+			case ALLEGRO_KEY_Q:
+				should_stop = true;
+				flush_other_commands();
+				break;
+			case ALLEGRO_KEY_R:
+				should_reset = true;
+				flush_other_commands();
+				break;
+			case ALLEGRO_KEY_T:
+				should_train = !should_train;
+				flush_other_commands();
+				break;
+			case ALLEGRO_KEY_S:
+				should_store_cache = true;
+				flush_other_commands();
+				break;
+			case ALLEGRO_KEY_L:
+				should_load_cache = true;
+				flush_other_commands();
+				break;
+			default:
+				break;
+        }
 	}
 }

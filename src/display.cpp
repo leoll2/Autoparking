@@ -4,6 +4,7 @@
 #include <thread>
 #include "display.h"
 #include "display_params.h"
+#include "keyboard.h"
 #include "field_params.h"
 #include "maneuver.h"
 
@@ -32,6 +33,15 @@ typedef struct icon {
 
 icon icons[N_ICONS];
 
+enum button {
+    PAUSE_BUTTON,
+    TRAIN_BUTTON,
+    RESET_BUTTON,
+    SAVE_BUTTON,
+    LOAD_BUTTON,
+    MAP_BUTTON,
+    QUIT_BUTTON
+};
 
 char const *action_keybind[N_ICONS] = {
     "P",
@@ -43,14 +53,14 @@ char const *action_keybind[N_ICONS] = {
     "Q",
 };
 
-char const *action_desc[N_ICONS] = {
-    "Pause",
-    "Train",
-    "Reset Q",
-    "Save Q",
-    "Load Q",
-    "Map",
-    "Quit"
+char const *action_desc[N_ICONS][2] = {
+    {"Pause", "Resume"},
+    {"Train", "Stop training"},
+    {"Reset Q", "Reset Q"},
+    {"Save Q", "Save Q"},
+    {"Load Q", "Load Q"},
+    {"Map", "Map"},
+    {"Quit", "Quit"}
 };
 
 /**
@@ -341,21 +351,34 @@ bool start_graphics(ALLEGRO_DISPLAY *display) {
 */
 void draw_toolbar() {
 
+    int mask = -1; // only icon to show; -1 to show all
+    int alt = (paused || should_train) ? 1 : 0;
+
     // Draw background and border
     al_draw_filled_rectangle(0, FIELD_VIS_H, DISP_WIDTH - 1, DISP_HEIGHT - 1, COLOR_TOOLBAR_BORDER);
     al_draw_filled_rectangle(2, FIELD_VIS_H + 2, DISP_WIDTH - 2, DISP_HEIGHT - 3, COLOR_TOOLBAR);
 
+    if (paused) {
+        mask = PAUSE_BUTTON;
+        al_draw_filled_rectangle(icons[PAUSE_BUTTON].x, icons[PAUSE_BUTTON].y, icons[PAUSE_BUTTON].x + ICON_SIZE, icons[PAUSE_BUTTON].y + ICON_SIZE, COLOR_REDBRICK);
+    } else if (should_train) {
+        mask = TRAIN_BUTTON;
+        al_draw_filled_rectangle(icons[TRAIN_BUTTON].x, icons[TRAIN_BUTTON].y, icons[TRAIN_BUTTON].x + ICON_SIZE, icons[TRAIN_BUTTON].y + ICON_SIZE, COLOR_REDBRICK);
+    }
+
     // Display toolbar elements
     for (int i = 0; i < N_ICONS; i++) {
 
-        // Draw icon
-        al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_ICON_BORDER, 2);
+        if (mask < 0 || mask == i) {
+            // Draw icon
+            al_draw_rectangle(icons[i].x - 1, icons[i].y - 1, icons[i].x + ICON_SIZE + 1, icons[i].y + ICON_SIZE + 1, COLOR_ICON_BORDER, 2);
 
-        // Draw keybind
-        al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE / 4, ALLEGRO_ALIGN_CENTER, action_keybind[i]);
+            // Draw keybind
+            al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE / 4, ALLEGRO_ALIGN_CENTER, action_keybind[i]);
 
-        // Draw description
-        al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, ALLEGRO_ALIGN_CENTER, action_desc[i]);
+            // Draw description
+            al_draw_text(font, COLOR_TEXT, icons[i].x + ICON_SIZE / 2, icons[i].y + ICON_SIZE + 8, ALLEGRO_ALIGN_CENTER, action_desc[i][alt]);
+        }
     }
 }
 
