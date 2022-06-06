@@ -76,9 +76,10 @@ From the Autoparking directory, clone the Allegro5 git repository:
 ```
 git clone https://github.com/liballeg/allegro5.git
 ```
-and switch to version 5.2.4:
+and switch to version 5.2.7:
 ```
-git checkout 5.2.4
+cd allegro5
+git checkout 5.2.7
 ```
 Get ready to compile:
 ```
